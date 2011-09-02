@@ -58,7 +58,7 @@ function []=angle_ex(figW,figH)
     P = [];
     k = [];
     ms = zeros(4,steps);
-    
+    Ps = zeros(4,4,steps);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
@@ -85,27 +85,50 @@ function []=angle_ex(figW,figH)
     
     
     f1 = figure;ax(1) = gca;
-    [o,h1] = baseline();
+    baseline();
     axis equal;
-    legend('True','Baseline');%,'Location','SouthEastOutside');
+    legend('True','Baseline');
     
     
     f2 = figure;ax(2) = gca;
     linkaxes(ax);
-    [o,h2] = ekf();
+    ekf();
     axis equal;
-    legend('True','EKF');%,'Location','SouthWestOutside');    
+    legend('True','EKF');    
+    xlim([-2 2]);ylim([-2.2 2]);
+%     
+%     exportplot('ex_4_3_baseline.pdf',figW,figH,f1);
+%     exportplot('ex_4_3_ekf.pdf',figW,figH,f2);
+    
+%     f3 = figure;ax(1) = gca;
+%     ckf();
+%     axis equal;
+%     legend('True','CKF/UKF');
+%     
+%     f4 = figure;ax(2) = gca;
+%     linkaxes(ax);
+%     ukf();
+%     axis equal;
+%     legend('True','UKF');    
+%     xlim([-2 2]);ylim([-2.2 2]);
+%     
+%     exportplot('ex_5_3_ckfukf.pdf',figW,figH,f3);
+    %exportplot('ex_5_3_ukf.pdf',figW,figH,f4);
+    
+    f5 = figure;ax(1) = gca;
+    bootstrap();
+    axis equal;
+    legend('True','Bootstrap');
+    
+    f6 = figure;ax(2) = gca;
+    linkaxes(ax);
+    sir();
+    axis equal;
+    legend('True','SIR');    
     xlim([-2 2]);ylim([-2.2 2]);
     
-    exportplot('ex_4_3_baseline.pdf',figW,figH,f1);
-    exportplot('ex_4_3_ekf.pdf',figW,figH,f2);
-    
-    %figure;
-    %ckf();
-    %figure;
-    %ukf;
-    %figure;
-    %sir;
+    exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5);
+    exportplot('ex_6_3_sir.pdf',figW,figH,f6);
     
    
     function [o,h]=baseline()
@@ -158,6 +181,7 @@ function []=angle_ex(figW,figH)
 
 
             ms(:,k) = m;
+            Ps(:,:,k) = P;
 
         end
 
@@ -179,6 +203,25 @@ function []=angle_ex(figW,figH)
         for ii = 1:size(S,2)
             o(ii,1:2) = [H1(x(1:2),S(:,ii)) H2(x(1:2),S(:,ii))];
         end    
+    end
+
+
+
+    function ms = ckf()
+
+        m = x0;            % Initialize to true value
+        P = eye(4);        % Some uncertainty
+        ms = zeros(4,steps);
+
+        for k=1:steps
+            [m,P] = ckf_(Theta(:,k));
+            ms(:,k) = m;
+            Ps(:,:,k) = P;
+        end
+
+          %% Compute error
+        fprintf('CKF %3.4f\n',rmse(X,ms));
+        showtrace('b');
     end
 
     function [mo,Po] = ckf_(yy)
@@ -207,21 +250,8 @@ function []=angle_ex(figW,figH)
         Po = P_-K*S_*K';
     end
 
-    function ms = ckf()
 
-        m = x0;            % Initialize to true value
-        P = eye(4);        % Some uncertainty
-        ms = zeros(4,steps);
 
-        for k=1:steps
-            [m,P] = ckf_(Theta(:,k));
-            ms(:,k) = m;
-        end
-
-          %% Compute error
-        fprintf('CKF %3.4f\n',rmse(X,ms));
-        showtrace();
-    end
 
     function ms=ukf()
         m = x0;            % Initialize to true value
@@ -254,6 +284,7 @@ function []=angle_ex(figW,figH)
             m = m_+K*(Theta(:,k)-u);
             P = P_-K*S_*K';
             ms(:,k) = m;
+            Ps(:,:,k) = P;
         end
 
         fprintf('UKF %3.4f\n',rmse(X,ms));
@@ -264,7 +295,7 @@ function []=angle_ex(figW,figH)
         P = eye(4);        % Some uncertainty
         ms = zeros(4,steps);
         ii = zeros(1,steps);
-        N = 50;
+        N = 150;
         p = repmat(x0,1,N); % particles
         W = ones(1,N); % weights
         W = W/sum(W);
@@ -284,7 +315,7 @@ function []=angle_ex(figW,figH)
                 p(:,l) = po(:,find(cdf >= ran,1));
             end
             ms(:,k) = p*W';
-            anim();
+            %anim();
         end
 
         %% Compute error
@@ -297,7 +328,7 @@ function []=angle_ex(figW,figH)
         P = eye(4);        % Some uncertainty
         ms = zeros(4,steps);
         ii = zeros(1,steps);
-        N = 50;
+        N = 150;
         p = repmat(x0,1,N); % particles
         W = ones(1,N); % weights
         W = W/sum(W);
@@ -346,7 +377,7 @@ function []=angle_ex(figW,figH)
                 %fprintf('not resampling, neff = %3.1f\n',Neff);
             end
             ms(:,k) = p*W';
-            anim();
+            %anim();
         end
         c
         %% Compute error
@@ -403,9 +434,24 @@ function []=angle_ex(figW,figH)
         if ~nargin
             color='b';
         end
+%         l95 = zeros(2,steps);
+%         u95 = l95;
+%         l95(1,:) = ms(1,:)-2*sqrt(squeeze(Ps(1,1,:))');
+%         l95(2,:) = ms(2,:)-2*sqrt(squeeze(Ps(2,2,:))');
+%         u95(1,:) = ms(1,:)+2*sqrt(squeeze(Ps(1,1,:))');
+%         u95(2,:) = ms(2,:)+2*sqrt(squeeze(Ps(2,2,:))');
+%         
+%         
+%        h = plot(X(1,:),X(2,:),'r-',...
+%                 ms(1,:),ms(2,:),[color '-'],...
+%                 l95(1,:),l95(2,:),'--k',...
+%                 u95(1,:),u95(2,:),'--k',...
+%                 S(1,:)',S(2,:)','kx');
+            
        h = plot(X(1,:),X(2,:),'r-',...
-           ms(1,:),ms(2,:),[color '-'],...
-           S(1,:)',S(2,:)','kx');
+                ms(1,:),ms(2,:),[color '-'],...
+                S(1,:)',S(2,:)','kx');     
+            
        %disp(h);
        axis([-2 2 -2.5 1.5]);
        

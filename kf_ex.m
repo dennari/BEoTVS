@@ -45,11 +45,11 @@
     Y(:,k) = y;
   end
 
-  clf;
-  subplot(1,1,1);
+  %figure;
+  %subplot(1,1,1);
   %plot(T,X(1,:),'--',T,Y,'o');
-  legend('True signal','Measurements');
-  fprintf('This is the simulated data. Press enter.\n');
+  %legend('True signal','Measurements');
+  %fprintf('This is the simulated data. Press enter.\n');
   %pause;
   
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,16 +70,16 @@
   end
 
   % Plot the signal and its estimate
-  clf;
+  figure;
   subplot(2,1,1);
-  %plot(T,X(1,:),'--',T,EST1(1,:),'-',T,Y,'.','MarkerSize',10);
+  plot(T,X(1,:),'--',T,EST1(1,:),'-',T,Y,'.','MarkerSize',10);
   legend('True signal','Estimated signal','Measurements');
   
   % Plot the derivative and its estimate
   subplot(2,1,2);
-  %plot(T,X(2,:),'--',T,EST1(2,:),'-');
+  plot(T,X(2,:),'--',T,EST1(2,:),'-');
   legend('True derivative','Estimated derivative');
-  %exportplot('ex_3_3_basesol.pdf',figW,figH);
+  exportplot('ex_3_3_basesol.pdf',figW,figH);
   % Compute error
   err1 = rmse(X,EST1)
   
@@ -121,31 +121,18 @@
   % Plot the signal and its estimate
   figure;
   subplot(2,1,1);
-  %plot(T,X(1,:),'--',T,EST2(1,:),'-',T,Y,'.','MarkerSize',10);
+  plot(T,X(1,:),'--',T,EST2(1,:),'-',T,Y,'.','MarkerSize',10);
   legend('True signal','Estimated signal','Measurements');
   
   % Plot the derivative and its estimate
   subplot(2,1,2);
-  %plot(T,X(2,:),'--',T,EST2(2,:),'-');
+  plot(T,X(2,:),'--',T,EST2(2,:),'-');
   legend('True derivative','Estimated derivative');
-  %exportplot('ex_3_3_kalmansol.pdf',figW,figH);
+  exportplot('ex_3_3_kalmansol.pdf',figW,figH);
 
-  figure(3);
-  subplot(2,1,1);
-  %plot(T,X(1,:),'--',T,EST2(1,:),'-');
-  hold on;
-  subplot(2,1,2);
-  %plot(T,X(2,:),'--',T,EST2(2,:),'-');
-  hold on;
-  
-  
-  
-  
+
   % Compute error
-  err2 = rmse(X,EST2)
-
-  fprintf('This is the KF estimate. Press enter.\n');
-  
+  err2 = rmse(X,EST2)  
 
 %%
 
@@ -172,7 +159,7 @@
   end
 
   % Plot the signal and its estimate
-  clf;
+  figure;
   subplot(2,1,1);
   plot(T,X(1,:),'--',T,EST3(1,:),'-',T,Y,'.','MarkerSize',10);
   legend('True signal','Estimated signal','Measurements');
@@ -186,10 +173,7 @@ exportplot('ex_3_3_statkalmansol.pdf',figW,figH);
   
   % Compute error
   err3 = rmse(X,EST3)
-  
-  fprintf('This will be the SKF estimate. Press enter.\n');
-  
- %%
+    
  
  %%
 
@@ -225,13 +209,24 @@ for k=steps-1:-1:1
     
 end
 
-  figure(3);
+  % Plot the signal and its estimate
+  figure;
   subplot(2,1,1);
-  plot(T,mss(1,:),'g-','LineWidth',2);
-  subplot(2,1,2);
-  plot(T,mss(2,:),'g-','LineWidth',2);
+  plot(T,EST2(1,:),'--',T,EST3(1,:),'-');
+  legend('Kalman','RTS');
+  xlabel('Time');
+  ylabel('Mean');
   
-   err3 = rmse(X,mss)
+  % Plot the derivative and its estimate
+  subplot(2,1,2);
+  plot(T,EST2(2,:),'--',T,EST3(2,:),'-');
+  legend('Kalman','RTS');
+  xlabel('Time');
+  ylabel('Mean');
+  
+  exportplot('ex_7_2.pdf',figW,figH);
+  
+  err3 = rmse(X,mss)
   
   
   

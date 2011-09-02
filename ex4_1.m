@@ -9,7 +9,8 @@ F=@(x)-0.01*cos(x);
 h=@(x)0.5*sin(2*x); 
 H=@(x)cos(2*x);
 Y=s;
-x0 = 0.4*pi;
+%x0 = 0.8*pi;
+x0 = 0;
 x = x0;
 for k=1:N
     x = f(x)+sqrt(q)*randn;
@@ -79,11 +80,11 @@ end
 ms_slkf = ms;
 Ps_slkf = Ps;
 plot(x,ms,'-g');
-legend('Meas.','True','EKF','SLF');
-xlabel('t');
-ylabel('m_k');
-fprintf('SLF %3.4f\n',rmse(s(x),ms));
-exportplot('ex_4_1.pdf',figW,figH);
+% legend('Meas.','True','EKF','SLF');
+% xlabel('t');
+% ylabel('m_k');
+% fprintf('SLF %3.4f\n',rmse(s(x),ms));
+% exportplot('ex_4_1.pdf',figW,figH);
 
 %% UKF
 
@@ -118,8 +119,13 @@ for k=1:n
     Ps(k) = P;
 end
 
-plot(x,ms,'-m');
-fprintf('UKF %3.4f\n',rmse(s(x),ms));
+% plot(x,ms,'-g');
+% fprintf('UKF %3.4f\n',rmse(s(x),ms));
+% legend('Meas.','True','EKF','UKF');
+% xlabel('t');
+% ylabel('m_k');
+% fprintf('SLF %3.4f\n',rmse(s(x),ms));
+% exportplot('ex_5_1.pdf',figW,figH);
 
 %% GHKF
 
@@ -158,7 +164,7 @@ fprintf('GHKF %3.4f\n',rmse(s(x),ms));
 %% CKF
 
 m = x0;
-P = 1;
+P = q;
 ms = zeros(1,n);
 Ps = zeros(1,n);
 
@@ -190,8 +196,14 @@ end
 ms_ckf = ms;
 Ps_ckf = Ps;
 
-plot(x,ms,'-m');
+plot(x,ms,'-k');
 fprintf('CKF %3.4f\n',rmse(s(x),ms));
+
+legend('Meas.','True','GHKF','CKF');
+xlabel('t');
+ylabel('m_k');
+fprintf('SLF %3.4f\n',rmse(s(x),ms));
+%exportplot('ex_5_2.pdf',figW,figH);
 
 %% bootstrap
 
@@ -199,7 +211,7 @@ m = x0;
 P = q;
 ms = zeros(1,n);
 Ps = zeros(1,n);
-N = 500; % number of particles
+N = 700; % number of particles
 p = m*ones(1,N); % particles
 W = ones(1,N); % weights
 W = W/sum(W);
@@ -221,7 +233,7 @@ for k=1:n
     ms(k) = W*p';
 end
 
-plot(x,ms,'-m');
+plot(x,ms,'-g');
 fprintf('BOOTSTRAP %3.4f\n',rmse(s(x),ms));
 
 %% SIR
@@ -230,7 +242,7 @@ m = x0;
 P = q;
 ms = zeros(1,n);
 Ps = zeros(1,n);
-N = 300; % number of particles
+N = 700; % number of particles
 p = m*ones(1,N); % particles
 W = ones(1,N); % weights
 W = W/sum(W);
@@ -287,8 +299,15 @@ for k=1:n
 
 end
 
-plot(x,ms,'--k');
+plot(x,ms,'-r');
 fprintf('SIR %3.4f\n\n',rmse(s(x),ms));
+
+legend('Meas.','True','Bootstrap','SIR');
+xlabel('t');
+ylabel('m_k');
+fprintf('SLF %3.4f\n',rmse(s(x),ms));
+exportplot('ex_6_2.pdf',figW,figH);
+
 
 %% ERTS
 
@@ -345,4 +364,11 @@ end
 
 plot(x,mss,'--g','LineWidth',2);
 fprintf('SLRTS %3.4f\n\n',rmse(s(x),mss));
+
+legend('Meas.','True','EKF','SLF','ERTS','SL RTS');
+xlabel('t');
+ylabel('m_k');
+fprintf('SLF %3.4f\n',rmse(s(x),ms));
+exportplot('ex_7_3.pdf',figW,figH);
+
 

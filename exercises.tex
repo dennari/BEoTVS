@@ -674,7 +674,7 @@ exercise~\ref{sec:3_3}}
 
 Unsurprisingly, the Kalman filter solution is clearly better than the baseline
 solution, which is directly affected by the noise. The root-mean-square errors
-for the solutions are presented in table~\ref{table:rmse3.3a}, from where
+for the solutions are presented in table~\ref{table:rmse3_3a}, from where
 it can be seen that the Kalman filter RMSE is $44$\% smaller. The relevant
 parts of the mcode for this exercise is shown in listing~\ref{lst:3_3a}.
 
@@ -688,7 +688,7 @@ Here the stationary Kalman filter, where the Kalman gain $\v{K}_k$ is constant,
 is compared to the solutions in \ref{sec:3_3a}. The constant for the Kalman gain
 was computed numerically by running the filter for a long time. The graphical
 solution is presented in figure~\ref{fig:ex_3_3_statkalmansol} and the RMSE in
-table~\ref{table:rmse3.3a}. The RMSE is a little smaller for the stationary
+table~\ref{table:rmse3_3a}. The RMSE is a little smaller for the stationary
 Kalman filter solution. Comparing the graphical solutions of the
 ordinary Kalman filter and the stationary Kalman filter carefully, it can be
 seen that during the first few steps, the stationary Kalman filter makes a
@@ -713,7 +713,7 @@ exercise~\ref{sec:3_3}}
 		$0.536$ & $0.237$ & $0.234$\\
 		\bottomrule
 	\end{tabular}
-	\label{table:rmse3.3a}
+	\label{table:rmse3_3a}
 \end{table}
 
 \section{}
@@ -768,7 +768,7 @@ the SLF, we need the following expectations:
 
 The result of applying the SLF in the same situation as in \ref{sec:4_1a} is
 presented also in figure~\ref{fig:ex_4_1}. The RMSE's for both of the methods
-is presented in table~\ref{table:rmse4.1} and the mcode is shown in listing~\ref{lst:4_1}.
+is presented in table~\ref{table:rmse4_1} and the mcode is shown in listing~\ref{lst:4_1}.
 
 
 \placefig[p]{ex_4_1}{1.0}{The true signal and the EKF and SLF approximations
@@ -785,7 +785,7 @@ in exercise~\ref{sec:4_1}}
 		$1.83$ & $0.84$\\
 		\bottomrule
 	\end{tabular}
-	\label{table:rmse4.1}
+	\label{table:rmse4_1}
 \end{table}
 
 
@@ -800,7 +800,7 @@ in exercise~\ref{sec:4_1}}
 In this exercise the classical problem of bearings only taget tracking is considered.
 The problem setting is not reproduced here, but an EKF was implemented for an approximate
 solution. The graphical results are presented in figures \ref{fig:ex_4_3_baseline} and \ref{fig:ex_4_3_ekf}, the RMSE value
-in table~\ref{table:rmse4.3} and the mcode in listing~\ref{lst:4_3}.
+in table~\ref{table:rmse4_3} and the mcode in listing~\ref{lst:4_3a}.
 
 %\placefig[p]{ex_4_3_baseline}{0.7}{The true trajectory and the baseline approximation exercise~\ref{sec:4_3a}}
 %\placefig[p]{ex_4_3_ekf}{0.7}{The true trajectory and the EKF approximation exercise~\ref{sec:4_3a}}
@@ -827,7 +827,7 @@ in table~\ref{table:rmse4.3} and the mcode in listing~\ref{lst:4_3}.
 		$1.019$ & $0.441$\\
 		\bottomrule
 	\end{tabular}
-	\label{table:rmse4.3}
+	\label{table:rmse4_3}
 \end{table}
 
 \clearpage
@@ -835,6 +835,172 @@ in table~\ref{table:rmse4.3} and the mcode in listing~\ref{lst:4_3}.
 
 \lstinputlisting[linerange=141-182,caption={m-code in exercise~\ref{sec:4_3a}},label=lst:4_3a]{angle_ex.m}
 
+\section{}
+
+\subsection{}\label{sec:5_1}
+
+Here we implement the unscented Kalman filter for the problem in exercise \ref{sec:4_1}
+The graphical results are presented in figure \ref{fig:ex_5_1}, where the UKF solution
+is compared with the EKF solution, and the mcode in shown listing~\ref{lst:5_1}. With
+the chosen parameter values the UKF and SLF solutions become identical and so the RMSE's
+are also identical.
+
+\placefig[p]{ex_5_1}{1.0}{The true signal and the EKF and UKF approximations
+in exercise~\ref{sec:5_1}}
+
+
+\clearpage
+
+\lstinputlisting[linerange=89-120,caption={m-code in exercise~\ref{sec:5_1}},label=lst:5_1]{ex4_1.m}
+
+
+
+
+\subsection{}\label{sec:5_2}
+
+Here also the Gauss-Hermite Kalman filter (GHKF) and the cubature Kalman filter (CKF)
+were implemented for the previous problem. The solutions of these methods were
+identical no matter what the order of the polynomial chosen for GHKF. The solutions
+are also identical to the UKF (with the chosen parameters) and SLF solutions. The mcode
+is presented in listing~\ref{lst:5_2}.
+
+\lstinputlisting[linerange=130-194,caption={m-code in exercise~\ref{sec:5_2}},label=lst:5_2]{ex4_1.m}
+
+
+\subsection{}\label{sec:5_3}
+
+Here we implement the UKF and the CKF for the target tracking problem in exercise \ref{sec:4_3}.
+Again the parameters for UKF were chosen so that these two methods became identical
+The graphical results are presented in figure \ref{fig:ex_5_3}, where the UKF/CKF and EKF solutions
+are compared and the mcode in shown listing~\ref{lst:5_3}. The updated RMSE values are presented
+in table~\ref{table:rmse5_3}. As can be seen, the CKF/UKF approximation is better but only by a very
+slight margin. 
+
+\begin{figure}[htb]
+  \begin{adjustwidth}{-2in}{-2in}
+	  \centering
+	  \subfloat[EKF approximation]{\label{fig:ex_5_3_ekf}\includegraphics[width=0.7\textwidth]{ex_4_3_ekf}}                
+	  \subfloat[CKF/UKF approximation]{\label{fig:ex_5_3_ckfukf}\includegraphics[width=0.7\textwidth]{ex_5_3_ckfukf}}
+  \end{adjustwidth}
+  	  \caption{The true trajectory, the EKF approximation and the CKF/UKF approximation in exercise~\ref{sec:5_3}}
+	  \label{fig:ex_5_3}
+\end{figure}
+
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:5_3}}
+	\begin{tabular}{c c c}
+		\otoprule
+		Baseline & EKF & CKF/UKF\\
+		\midrule
+		$1.019$ & $0.441$ & $0.438$\\
+		\bottomrule
+	\end{tabular}
+	\label{table:rmse5_3}
+\end{table}
+
+
+\clearpage
+
+\lstinputlisting[linerange=210-292,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
+
+\section{}
+\subsection{}
+
+
+\subsection{}\label{sec:6_2}
+
+Here we implement the Bootstrap and sequential importance resampling (SIR) particle filters 
+for the problem in exercise \ref{sec:4_1}. Both of the filters were run with $n=700$ particles and
+the UKF filter was used in SIR to provide importance distribution.
+The graphical results are presented in figure \ref{fig:ex_6_2} and the
+mcode in shown listing~\ref{lst:6_2}. The RMSE values are presented in table~\ref{table:rmse6_2}. As can be seen
+from the figure and the RMSE table, the SIR filter is somewhat better as was expected.
+
+\placefig[p]{ex_6_2}{1.0}{The true signal and the Bootstrap and SIR approximations
+in exercise~\ref{sec:6_2}}
+
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:6_2}}
+	\begin{tabular}{c c c}
+		\otoprule
+		Bootstrap & SIR\\
+		\midrule
+		$0.388$ & $0.355$\\
+		\bottomrule
+	\end{tabular}
+	\label{table:rmse6_2}
+\end{table}
+
+\clearpage
+
+\lstinputlisting[linerange=208-300,caption={m-code in exercise~\ref{sec:6_2}},label=lst:6_2]{ex4_1.m}
+
+\subsection{}\label{sec:6_3}
+
+Here we implement the bootstrap filter and SIR with CKF importance distribution for the target tracking problem in
+exercise \ref{sec:4_3}. The graphical results are presented in figure \ref{fig:ex_6_3}, where the UKF/CKF and EKF solutions
+are compared and the mcode in shown listing~\ref{lst:6_3}. The updated RMSE values are presented
+in table~\ref{table:rmse6_3}. As can be seen, the CKF/UKF approximation is better but only by a very
+slight margin. 
+
+\begin{figure}[htb]
+  \begin{adjustwidth}{-2in}{-2in}
+	  \centering
+	  \subfloat[Bootstrap
+	  approximation]{\label{fig:ex_6_3_bootstrap}\includegraphics[width=0.7\textwidth]{ex_6_3_bootstrap}}
+	  \subfloat[SIR approximation]{\label{fig:ex_6_3_sir}\includegraphics[width=0.7\textwidth]{ex_6_3_sir}}
+  \end{adjustwidth}
+  	  \caption{The true trajectory, the bootstrap approximation and the SIR approximation in exercise~\ref{sec:6_3}}
+	  \label{fig:ex_6_3}
+\end{figure}
+
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:6_3}}
+	\begin{tabular}{c c c}
+		\otoprule
+		Bootstrap & SIR\\
+		\midrule
+		$0.946$ & $0.440$\\
+		\bottomrule
+	\end{tabular}
+	\label{table:rmse6_3}
+\end{table}
+
+
+\lstinputlisting[linerange=294-386,caption={m-code in exercise~\ref{sec:6_3}},label=lst:6_3]{angle_ex.m}
+
+\section{}
+
+\subsection{}
+\subsubsection{}\label{sec:7_1a}
+\placefig[p]{ex_7_1a_means}{1.0}{The measurements, the true signal, the Kalman filter solution mean and the RTS smoother
+solution mean in exercise~\ref{sec:7_1a}}
+\placefig[p]{ex_7_1a_variances}{1.0}{The Kalman filter solution's and the RTS smoother
+solution's variances in exercise~\ref{sec:7_1a}}
+
+\subsubsection{}\label{sec:7_1b}
+\placefig[p]{ex_7_1b_means}{1.0}{The RTS smoother's and its grid approximation's means in exercise~\ref{sec:7_1b}}
+\placefig[p]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
+
+\subsubsection{}\label{sec:7_1c}
+\placefig[p]{ex_7_1c_means}{1.0}{The RTS and the stationary RTS smoother's means in exercise~\ref{sec:7_1c}}
+\placefig[p]{ex_7_1c_variances}{1.0}{The RTS and the stationary RTS smoother's variances in exercise~\ref{sec:7_1c}}
+
+\subsection{}\label{sec:7_2}
+
+\placefig[p]{ex_7_2}{1.0}{The Kalman filter's and RTS smoother's means in exercise~\ref{sec:7_2}}
+
+\subsection{}\label{sec:7_3}
+\subsubsection{}\label{sec:7_3a}
+\subsubsection{}\label{sec:7_3b}
+\placefig[p]{ex_7_3}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SL RTS) filters in exercise~\ref{sec:7_2}}
+\subsubsection{}\label{sec:7_3c}
 
 
 %\bibliographystyle{plain}

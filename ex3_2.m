@@ -10,13 +10,8 @@ figH = figW/figAspectRatio;
 N=100;
 q=3;
 
+% signal
 s=cumsum([0 normrnd(0,sqrt(q),1,N-1)]);
-figure(1);
-clf;
-true_m = plot(1:N,s);
-xlabel('Time');
-ylabel('Mean');
-hold on;
 
 % measurements
 A = 1;
@@ -26,9 +21,8 @@ mn = 0;
 n = N;
 x = floor(1:N/n:N);
 y = s(1,x)+normrnd(mn,sqrt(r),1,n);
-measurements = plot(x,y,'.k');
 
-% Kalman filter
+%% Kalman filter
 m = 0;
 P = 1;
 m2 = 0;
@@ -50,17 +44,10 @@ for k=2:n
     Ps(k) = P;
     Ks(k) = K;
 end
-figure(1);
-kalman_m = plot(x,ms,'-r');
-hold on;
+
 mso = ms;
 Pso = Ps;
 rmse(x,ms)
-figure(2);
-kalman_P = plot(x,Ps,'-r');
-xlabel('Time');
-ylabel('Variance');
-hold on;
 
 % discretization
 a=min(y);
@@ -85,27 +72,27 @@ for k=2:n
     ms(k) = m; % mean
     Ps(k) = (t-m).^2*p';
 end;
+dms = ms;
+dPs = Ps; 
 
-%plot
-figure(1);
-discr_m = plot(x,ms,'-g','LineWidth',2.0);
-legend([true_m measurements kalman_m discr_m],'True','Measurements','Kalman','Discretization');
-exportplot('ex_3_2_means.pdf',figW,figH);
-figure(2);
-discr_P = plot(x,Ps,'-g');
-legend([kalman_P discr_P],'Kalman','Discretization');
-set(gcf,'Color','none','Units','points','Position',[400 400 figW figH]);
-exportplot('ex_3_2_variances.pdf',figW,figH);
-
-
-
-%figure(3);
-%pcolor(1:n,t,distr);
-%shading interp;
-%ylim([a b]);
-
-
-%rmse(x,ms)/rmse(x,mso)
+if 1 % plot
+    % means, measurements
+    plot(x,y,'.k',...
+        1:n,s,...
+        x,dms,...
+        x,mso);
+    legend('Measurements','True','Discretization','Kalman');
+    xlabel('Time');
+    ylabel('Signal mean');
+    exportplot('ex_3_2_means.pdf',figW,figH);
+    % variances
+    figure;
+    plot(x,dPs,x,Pso);
+    legend('Kalman','Discretization');
+    xlabel('Time');
+    ylabel('Variance');
+    exportplot('ex_3_2_variances.pdf',figW,figH);
+end
 
 
 %% stationary Kalman filter (use the last value of K (the Kalman gain) from
@@ -121,7 +108,7 @@ for k=1:n
     ms(k) = m;
     Ps(k) = P;
 end
-kalmansolution = plot(x,ms,'-k');
+%kalmansolution = plot(x,ms,'-k');
 ms_st = ms;
 Ps_st = Ps;
 rmse(x,ms)
@@ -130,6 +117,8 @@ rmse(x,ms)
 
 
 %% RTS smoother
+
+
 
 mss = zeros(1,n);
 Pss = zeros(1,n);
@@ -147,28 +136,42 @@ for k=n-1:-1:1
     mss(k) = m;
     Pss(k) = P;
 end
-
-figure(1);
-rtssolution = plot(x,mss,'-g','LineWidth',2);
 rmse(s,mss)
+rts_m = mss;
+rts_p = Pss;
 
-hold on;
-figure(2);
-plot(x,Pss,'-g','LineWidth',2);
-hold on;
-%yl = ylim;
-%ylim([0,yl(2)]);
-%figure(3);
-%plot(x,mss,'-g','LineWidth',2);
+if 1 % plot
+    % compare with kalman filter
+    % means, measurements
+    plot(x,y,'.k',...
+        1:n,s,...
+        x,mso,...
+        x,mss);
+    legend('Measurements','True','Kalman','RTS');
+    xlabel('Time');
+    ylabel('Signal mean');
+    exportplot('ex_7_1a_means.pdf',figW,figH);
+
+    % variances
+    figure;
+    plot(x,Pso,x,Pss);
+    legend('Kalman','RTS');
+    xlabel('Time');
+    ylabel('Variance');
+    exportplot('ex_7_1a_variances.pdf',figW,figH);
+    
+end
 
 
-if 0
+if 1
 % RTS smoother -- discrete
 
 mss = zeros(1,n);
 Pss = zeros(1,n);
 m = mso(end);
 P = Pso(end);
+mss(end) = m;
+Pss(end) = P;
 p_ = normpdf(t,m,P);
 size(p_)
 distr = zeros(N,n);
@@ -182,17 +185,34 @@ for k=n-1:-1:1
     p = p/sum(p);
     p_ = p;
     distr(:,k) = p';
-    mss(k) = t*p';
-    
+    m = t*p';
+    mss(k) = m;
+    Pss(k) = (t-m).^2*p';
 end
-figure(1);
-plot(x,mss,'-m','LineWidth',2);
-pcolor(1:n,t,distr);
-shading interp;
-ylim([a b]);
+rts_discr_m = mss;
+rts_discr_P = Pss;
+
+if 1 %plot
+    %pcolor(1:n,t,distr);
+    %hold on;
+    %shading interp;
+    %ylim([a b]);
+    plot(x,rts_discr_m,x,rts_m);
+    legend('Discretization','RTS');
+    xlabel('Time');
+    ylabel('Signal mean');
+    exportplot('ex_7_1b_means.pdf',figW,figH);
+    figure;
+    plot(x,rts_discr_P,x,rts_p);
+    legend('Discretization','RTS');
+    xlabel('Time');
+    ylabel('Variance');
+    exportplot('ex_7_1b_variances.pdf',figW,figH);
+end
+
+end
 
 
-end
 
 if 1
 % RTS smoother -- using the stationary Kalman filter
@@ -211,11 +231,23 @@ for k=n-1:-1:1
     Pss(k) = P;
 end
 rmse(s,mss)
-figure(1);
-rtssolution = plot(x,mss,'--m','LineWidth',2);
-hold on;
-figure(2);
-plot(x,Pss,'-c','LineWidth',2);
+if 1 %plot
+    %pcolor(1:n,t,distr);
+    %hold on;
+    %shading interp;
+    %ylim([a b]);
+    plot(x,mss,x,rts_m);
+    legend('Stat. RTS','RTS');
+    xlabel('Time');
+    ylabel('Signal mean');
+    exportplot('ex_7_1c_means.pdf',figW,figH);
+    figure;
+    plot(x,Pss,x,rts_p);
+    legend('Stat. RTS','RTS');
+    xlabel('Time');
+    ylabel('Variance');
+    exportplot('ex_7_1c_variances.pdf',figW,figH);
+end
 
 end
 
