@@ -1,0 +1,441 @@
+\documentclass[a4paper,oneside,article]{memoir}
+
+
+
+% LAYOUT
+\usepackage{changepage}
+\setulmarginsandblock{0.7\uppermargin}{0.8\lowermargin}{*}
+
+% MATHS
+\usepackage{amsmath,amsfonts,amssymb,amsbsy}
+\usepackage{commath}
+\usepackage{calc}
+% taulukon otiskko taulukon päälle komennolla \topcaption
+\usepackage{topcapt} 
+%\usepackage{subfigure}
+% FONTS & LANGUAGE
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{light-gray}{gray}{0.8}
+\usepackage{fontspec,xltxtra,polyglossia}
+\setmainlanguage{english}
+\usepackage[normalem]{ulem} % have underlinings work
+\defaultfontfeatures{Ligatures=TeX}
+
+\setmainfont[Ligatures={Common}, Numbers={OldStyle}]{Linux Libertine O}
+%\setsansfont[Scale=MatchLowercase]{Inconsolata}
+\setmonofont[Scale=0.8]{Menlo}
+
+% PDF SETUP
+\usepackage[unicode,bookmarks, colorlinks, breaklinks, pdfstartview=FitH
+pdftitle={T-61.5140: Prerequisites},
+pdfauthor={Ville Väänänen},
+pdfproducer={xetex}
+]{hyperref}
+\hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=MidnightBlue} 
+
+% TABLES
+\usepackage{booktabs}
+\usepackage{rccol}
+\usepackage{tabularx} % requires array
+\newcommand{\otoprule}{\midrule[\heavyrulewidth]}
+\newcolumntype{d}[2]{R[.][.]{#1}{#2}}
+
+
+%%%%%%%% OMAT KOMENNOT %%%%%%%%%%%%
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+% infinitesimaalinen muutos
+\newcommand{\ds}{\mathrm{d}}
+\newcommand{\measure}[2]{\ds#1(#2)}
+\newcommand{\dd}{\;\ds}
+% määrätty integraali
+\newcommand{\defint}[4]{
+\int_{#1}^{#2}#3\dd#4
+}
+
+% reaaliluvut, kompleksiluvut..
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Complex}{\field{C}}
+\newcommand{\Deg}{\mathrm{Deg}}
+\newcommand{\iprod}[2]{\langle{}#1,#2\rangle}
+\renewcommand{\v}[1]{\boldsymbol{#1}} % vektorit ja matriisit
+
+% statistics
+\newcommand{\cond}[2]{#1 \middle\vert #2}
+\newcommand{\var}[1]{\mathrm{var}\left(#1\right)}
+\newcommand{\cov}[2]{\mathrm{cov}\left[#1,#2\right]}
+\newcommand{\E}[1]{\mathbb{E}\left(#1\right)}
+\newcommand{\Prob}[1]{\mathrm{P}\left(#1\right)}
+\newcommand{\mn}[1]{\overline{#1}}
+% analysis
+
+% PARAGRAPHS
+%\usepackage{parskip}
+
+% kuvat
+\newcommand{\scalefig}[3]{
+  \begin{figure}[ht!]
+    \begin{adjustwidth}{-2in}{-2in}
+	    \centering
+	    \includegraphics[width=\paperwidth*\real{#2}*\real{0.8}]{#1}
+	    %%% I think \captionwidth (see above) can go away as long as
+	\end{adjustwidth}
+	\centering
+	\caption{#3}
+	\label{fig:#1}
+  	
+  \end{figure}
+}
+\usepackage{listings}
+\lstset{ %
+	language=bash,                % choose the language of the code
+	basicstyle=\footnotesize\ttfamily,% the size of the fonts that are used for the code 
+	numbers=none,                   % where to put the line-numbers
+	numberstyle=\footnotesize\ttfamily,      % the size of the fonts that are usedfor the line-numbers 
+	stepnumber=1,                   % the step between two line-numbers. If it's 1 each line 
+	aboveskip=2\medskipamount,
+	belowskip=2\medskipamount,                                % will be numbered
+	numbersep=-5pt,                  % how far the line-numbers are from the code
+	backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+	showspaces=false,               % show spaces adding particular underscores
+	showstringspaces=false,         % underline spaces within strings
+	showtabs=false,                 % show tabs within strings adding particular underscores
+	frame=l,
+	framesep=0pt,
+	framexleftmargin=2mm,
+	rulecolor=\color{light-gray},	                % adds a frame around the code
+	tabsize=2,	                % sets default tabsize to 2 spaces
+	caption=,
+	captionpos=t,                   % sets the caption-position to bottom
+	breaklines=true,                % sets automatic line breaking
+	breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+	%title=\lstname,                 % show the filename of files included with
+	%\lstinputlisting;
+	                                % also try caption instead of title
+	escapeinside={\%*}{*)},         % if you want to add a comment within your code
+	morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+\newcommand{\course}{T-61.5140}
+\newcommand{\coursename}{Machine Learning: Advanced probabilistic methods}
+\newcommand{\duedate}{\today}
+\newcommand{\studentid}{63527M}
+\renewcommand{\title}{Second Exercise: Machine learning exercise with BernoulliMix}
+\author{Ville Väänänen}
+
+\counterwithout{section}{chapter}
+\renewcommand\thesection{\arabic{section}}
+\checkandfixthelayout
+
+
+\begin{document}
+
+\begin{titlingpage}
+	\begin{adjustwidth}{-0.6in}{-0.6in}
+	\begin{center}
+		%\begin{minipage}{1.2\textwidth}
+			\begin{flushright} \large
+			Ville \textsc{Väänänen}\\
+			\studentid\\
+			ville.vaananen@aalto.fi
+			\end{flushright}
+		%\end{minipage}
+		\vspace{8.0cm}
+		
+		\textsc{\LARGE \title}
+		\HRule \\[0.19cm]
+		{\large \course\: \coursename}
+		
+		\vfill
+		\today
+	\end{center}
+	\end{adjustwidth}
+\end{titlingpage}
+\newpage
+
+
+\section{Initialize the mixture model parameters}
+
+\subsection*{Exercise 1}
+
+A mixture of Bernoulli distributions is given by
+\begin{equation}
+p(\mathbf{x}|\boldsymbol\theta, \boldsymbol\pi)=\sum\limits_{k=1}^{K}\pi_k p(\mathbf{x}|\boldsymbol\theta_k)\textrm{,}
+\end{equation}
+where $\boldsymbol\theta = \{\boldsymbol\theta_1,\ldots,\boldsymbol\theta_K\}$, $\boldsymbol\pi = \{\pi_1,\ldots,\pi_K\}$, and the component distributions are:
+\begin{equation}
+p(\mathbf{x}|\boldsymbol\theta_k) = \prod\limits_{i=1}^{D} \theta_{ki}^{x_i}(1-\theta_{ki})^{(1-x_i)}\textrm{.}
+\end{equation}
+The program outputs:
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/bmix-1.11/bin > ./bmix_init -d 4 -c 3
+3 4
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 3 component distributions:
+0.3333333333 0.3333333333 0.3333333333 
+# Parameters of the component distributions, 3 components, data dimension 4:
+0.5281531079 0.6692838689 0.6539852782 0.5305702124 
+0.2935600861 0.3643666001 0.4094480549 0.5934591449 
+0.2678476663 0.7157273760 0.7300090564 0.2622106730 
+\end{lstlisting}
+Now identifying the resulting model we have the mixing coefficients:
+\begin{table}[h]
+	\centering
+		\begin{tabular}{c c c}
+		$\pi_1$ & $\pi_2$ & $\pi_3$ \\
+		0.33 & 0.33 &  0.33
+		\end{tabular}
+\end{table}
+\\and the parameters of each of the component distributions:
+\begin{table}[h]
+	\centering
+		\begin{tabular}{c c c c c}
+		$\theta_{ki}$ & $i = 1$ & $i = 2$ & $i = 3$ & $i = 4$ \\
+		$k=1$ & 0.53 & 0.67 & 0.65 & 0.53 \\
+		$k=2$ & 0.29 & 0.36 & 0.41 & 0.59 \\
+		$k=3$ & 0.27 & 0.72 & 0.73 & 0.26 \\
+		\end{tabular}
+\end{table}
+
+\subsection*{Exercise 2}
+
+Using the command
+\begin{lstlisting}
+./bmix_init --data-dim 3 --clusters 4 \
+--min-probability 0.5 --max-probability 0.5
+\end{lstlisting}
+isn't useful, because training the model with EM-algorithm doesn't work as the model gives the exact same responsibility for all the clusters and all the samples.
+
+\subsection*{Exercise 3}
+If some of the initial value for some $\theta_{ki}$ are zero, 
+then they will stay zero in the EM-algorithm.
+
+\section{Train the mixture model parameters}
+
+\subsection*{Exercise 1}
+The command from the example with short options:
+\begin{lstlisting}
+./bmix_train -f marker.data -d 6 -c 2 -t 10 -o cancer.model
+\end{lstlisting}
+
+\subsection*{Exercise 2}
+
+The resulting models are:
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex321_out1.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.2285511019 0.7714488981 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.6908509105 0.8059927287 0.2430823346 0.0000001046 0.2427564918 0.1231809373 
+0.0000000000 0.0000000000 0.3032176848 0.2728972618 0.2009777348 0.2705156062 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex321_out2.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.2285511019 0.7714488981 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.6908509105 0.8059927287 0.2430823346 0.0000001046 0.2427564918 0.1231809373 
+0.0000000000 0.0000000000 0.3032176848 0.2728972618 0.2009777348 0.2705156062 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex321_out3.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.2285511019 0.7714488981 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.6908509105 0.8059927287 0.2430823346 0.0000001046 0.2427564918 0.1231809373 
+0.0000000000 0.0000000000 0.3032176848 0.2728972618 0.2009777348 0.2705156062 
+\end{lstlisting}
+The models are identical as expected. Using the same initialization and same amount of iterations, the models converge in a similar way, because EM is an exact and deterministic algorithm.
+
+\subsection*{Exercise 3}
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex323_out1.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.2210196038 0.7789803962 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.7143924526 0.8334578601 0.2462516817 0.0000000000 0.2459326803 0.1242190576 
+0.0000000000 0.0000000004 0.3017370350 0.2702588112 0.2004804909 0.2687965697 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex323_out2.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.7103079344 0.2896920656 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.1480249021 0.1850491109 0.0034828609 0.2220332689 0.1478018995 0.0346028428 
+0.1820949921 0.1821543662 0.9907063898 0.1823119425 0.3643229013 0.7327209014
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex323_out3.model 
+2 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.6945469243 0.3054530757 
+# Parameters of the component distributions, 2 components, data dimension 6:
+0.1505730472 0.1883208181 0.0010504613 0.2257028130 0.1492285214 0.0209179934 
+0.1745429799 0.1748644410 0.9452976988 0.1760176129 0.3499067901 0.7278158086
+\end{lstlisting}
+This time the resulting models are different, because the algorithm randomly initializes the 
+models each time.
+
+\subsection*{Exercise 4}
+Let's first calculate the responsibilities of the E-step:
+\begin{equation}
+\gamma(z_{nk}) = \frac{\pi_k p(x_n|\theta_k)}{\sum\limits_{j=1}^{2}\pi_j p(x_n|\theta_j)}
+\end{equation}
+\begin{eqnarray*}
+\gamma(z_{11}) &=& \frac{7/50}{7/50 + 21/500} = 10/13 \\
+\gamma(z_{21}) &=& \frac{7/50}{7/50 + 21/125} = 5/11 \\
+\gamma(z_{12}) &=& \frac{21/500}{7/50 + 21/500} = 3/13 \\
+\gamma(z_{22}) &=& \frac{21/125}{7/50 + 21/125} = 6/11
+\end{eqnarray*}
+Then in the M-step we need to evaluate:
+\begin{eqnarray*}
+N_1 &=& \sum\limits_{n=1}^{2}\gamma(z_{n1}) = 5/11 + 10/13 = 1.22378 \\
+N_2 &=& 3/10 + 6/11 = 0.77622\textrm{,}
+\end{eqnarray*}
+thus giving us the mixing coefficients:
+\begin{eqnarray*}
+\pi_1 &=& \frac{N_1}{N} = 0.61189 \\
+\pi_2 &=& 0.38811\textrm{.}
+\end{eqnarray*}
+Finally the parameters for the component distributions can be calculated from:
+\begin{eqnarray*}
+\theta_{11} &=& \frac{1}{N_1}\sum\limits_{n=1}^{2}\gamma(z_{n1})x_{n1} = 0.62857 \\
+\theta_{12} &=& 1 \\
+\theta_{21} &=& 0.29730\\
+\theta_{22} &=& 1
+\end{eqnarray*}
+The bmix\_train algorithm gives the following model, when the training is run only once:
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex324_out.model 
+2 2
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 2 component distributions:
+0.6118881119 0.3881118881 
+# Parameters of the component distributions, 2 components, data dimension 2:
+0.6285714286 1.0000000000 
+0.2972972973 1.0000000000 
+\end{lstlisting}
+from where we can conclude that the paper and pen answers are correct.
+
+\section{Calculate the likelihood of data with the mixture model}
+
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat avg_likelihood_rand.out 
+ -4.1671282824
+ -4.5503974166
+ -3.9304794722
+ -4.1101738826
+ -4.3071068524
+ -4.1310575406
+ -4.2139555028
+ -4.2028436699
+ -4.7432553356
+ -4.0318568061
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat avg_likelihood_trained.out 
+ -2.7780631288
+ -2.7724763802
+ -2.7724764112
+ -2.7724764072
+ -2.7724764749
+ -2.8646873117
+ -2.8646873117
+ -2.7745637729
+ -2.7724764137
+ -2.8646873117
+\end{lstlisting}
+Clearly the average likelihood for the untrained models is smaller than for trained models. This is
+naturally caused by the EM-algorithm, that aims to maximize the likelihood (or at least one form of it).
+
+
+\section{Sample data from the mixture model}
+
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex341_initial.model
+5 12
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 5 component distributions:
+0.1378739801 0.1431486374 0.4995968242 0.0493039091 0.1700766492 
+# Parameters of the component distributions, 5 components, data dimension 12:
+0.8483041127 1.0000000000 1.0000000000 0.9999999998 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0212076028 0.0212076028 
+0.2451138896 0.2655400470 0.2859662045 0.2655400470 0.8987371421 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0176794638 0.0237981642 0.0652553973 0.2971414723 0.5679618718 0.6264885971 0.7493947201 0.7493947201 
+0.1779155033 0.6432890160 0.9398148555 0.1095425054 0.0000000000 0.0593719743 0.0601851445 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0512311904 0.2058898809 0.7887508848 0.8127217274 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex341_sample10.model 
+5 12
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 5 component distributions:
+0.0867511491 0.2000000000 0.2000000000 0.3000000000 0.2132488509 
+# Parameters of the component distributions, 5 components, data dimension 12:
+0.0000000483 1.0000000000 1.0000000000 1.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.5000000000 1.0000000000 0.5000000000 
+0.0000000000 0.5000000000 0.5000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.6666666667 1.0000000000 0.6666666667 0.6666666667 1.0000000000 
+0.9378713883 1.0000000000 1.0000000000 1.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex341_sample100.model 
+5 12
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 5 component distributions:
+0.2000000000 0.4269456773 0.1578734645 0.1600000000 0.0551808582 
+# Parameters of the component distributions, 5 components, data dimension 12:
+0.6500000000 0.9000000000 0.9500000000 0.8000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0496294187 0.3043819506 0.7260876886 0.6089767711 0.7607986667 0.7854749351 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.2533674682 0.9425962411 0.6239957895 0.0000000000 0.0000000000 0.0000000000 0.0599468294 
+0.1250000000 0.1250000000 0.1250000000 0.2500000000 0.8750000000 1.0000000000 1.0000000000 1.0000000000 0.9375000000 1.0000000000 1.0000000000 1.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.3624445263 0.0000000000 0.5714493370 0.0000000000 0.0000000000 0.9999898474 1.0000000000 
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > cat ex341_sample1000.model 
+5 12
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 5 component distributions:
+0.1720942421 0.4706627393 0.1931531365 0.1599272440 0.0041626381 
+# Parameters of the component distributions, 5 components, data dimension 12:
+0.6217396010 0.9239123754 0.9825277912 0.7554000554 0.0000000000 0.0000000000 0.0059256536 0.0000000000 0.0000000000 0.0000000000 0.0116224287 0.0174346886 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0170388770 0.0311820954 0.0641096789 0.3362930553 0.5566131018 0.5836320127 0.7391918760 0.7439153119 
+0.0000113620 0.0000000000 0.0150793536 0.0000000000 0.0361445558 0.2264982614 0.7795386603 0.7978288588 0.0000000000 0.0000000000 0.0000000000 0.0000000000 
+0.2563665762 0.3001364795 0.2626194196 0.2376080463 0.8816446629 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 1.0000000000 
+0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.0000000000 0.8762846589 0.0741382617 0.1655197735 0.7436891442 0.0910274067 0.9999739549 0.4658411146
+\end{lstlisting}
+
+\section{Cluster data with the mixture model}
+\label{cluster}
+
+\subsection*{Exercise 1}
+\begin{lstlisting}
+~/School/EclipseWS/T-61.5140 Mlapm/exercise > python ex351.py 
+3 6
+# A finite mixture model of multivariate Bernoulli distributions
+# Mixture coefficients of the 3 component distributions:
+0.6015143496 0.2705895759 0.1278960745 
+# Parameters of the component distributions, 3 components, data dimension 6:
+0.0498718981 0.0936211278 0.0000000000 0.2594938600 0.1723104808 0.0000000000 
+0.0000000000 0.0000000000 0.8752817046 0.2011793514 0.2004789353 0.7780281819 
+1.0000000000 1.0000000000 0.4115183296 0.0000000000 0.4115183296 0.2057591648 
+
+averages:
+
+0.0434782609 0.0869565217 0.0000000000 0.2608695652 0.1739130435 0.0000000000
+0.0000000000 0.0000000000 0.9000000000 0.2000000000 0.2000000000 0.8000000000
+1.0000000000 1.0000000000 0.4000000000 0.0000000000 0.4000000000 0.2000000000
+\end{lstlisting}
+
+\subsection*{Exercise 2}
+
+Here the cross-validation was done according to the procedure in the mentioned article.
+Thus there were $10$ permutations of the data and for every number of component distributions in $[2,\dots,30]$ 
+a $5$-fold cross-validation was computed resulting in $50$ likelihood values per number of component distributions.
+The median and interquartile range for the training and validation log-likelihoods as a function of the number of
+components is displayed in figure~\ref{fig:e352}
+
+As can be read from figure~\ref{fig:e352}, the optimal number of components is $6$. Although the median seems to be
+slightly higher at around $15$ components, the IQR is much larger.
+
+\scalefig{e352}{0.9}{The median and interquartile range for the training and validation log-likelihoods as a function of the number of
+components in section~\ref{cluster} Exercise 2}
+
+
+%\bibliographystyle{plain}
+%\bibliography{viitteet}
+\end{document}
