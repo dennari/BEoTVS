@@ -755,8 +755,47 @@ from $x_0=\frac{2}{5}\pi$.
 
 In statistically linearized filter (SLF) the linear approximation
 of the EKF is replaced by statistical linearization. In order to use
-the SLF, we need the following expectations:
+the SLF, we need to derive the expectations for $f(x)$ and $h(x)$.
 
+Let's start with $f(x)$:
+\begin{align}
+	\E{f(x)}&=m-0.01\defint{-\infty}{\infty}{\left(\sin(x)\right)N(x|m,P)}{x}
+\end{align}
+To calculate this integral, let's look at the inverse Fourier transform $g(x)$ of the Gaussian pdf $N(x|m,P)$:
+\begin{align}
+	g(x)&=\frac{1}{2\pi}\defint{-\infty}{\infty}{N(\omega|m,P)e^{i\omega x}}{\omega}\\
+	&=\frac{1}{2\pi}\defint{-\infty}{\infty}{N(\omega|m,P)\left(\cos(\omega x)+i\sin(\omega x)\right)}{\omega}
+\end{align}
+from where we can deduce, that the integral we're looking for is equal to $2\pi\mathrm{Im}[g(1)]$, where
+``Im'' denotes the imaginary part. Happily we also know that
+
+\begin{align}
+	g(x)&=\frac{1}{2\pi}e^{-\frac{1}{2}\left(Px^2-2mxi\right)}\\
+	\Rightarrow 2\pi\mathrm{Im}[g(1)] &= \sin(m)e^{-\frac{1}{2}P}\\
+	\Rightarrow \E{f(x)} =& m-0.01\sin(m)e^{-\frac{1}{2}P}.
+\end{align}
+From this we can readily infer that $\E{h(x)}=2\pi\mathrm{Im}[g(2)]$, giving
+\begin{align}
+	\E{h(x)} =& \frac{1}{2}\sin(2m)e^{-2P}\\
+\end{align}
+We also need the expectations of $f(x)(x-m)$ and $h(x)(x-m)$:
+\begin{align}
+	\E{f(x)(x-m)}&=\E{xf(x)}-m\E{f(x)}\\
+	&=\E{x^2}-0.01\E{x\sin(x)}-m\E{f(x)}\\
+\end{align}
+To calculate $\E{x\sin(x)}$, we again use the fact that the answer
+is $2\pi\mathrm{Im}[g_2(1)]$, where $g_2$ is the inverse Fourier transform
+of $xN(x|m,P)$ that we happen to know to be
+\begin{align}
+	g_2(x)&=\frac{1}{2\pi}e^{-\frac{1}{2}\left(Px^2\right)}\left(m+xPi\right)e^{imx}\shortintertext{giving}
+	2\pi\mathrm{Im}[g_2(1)] &=  e^{-\frac{1}{2}\left(P\right)}\left(P\cos(m)+m\sin(m)\right)\\
+	\Rightarrow \E{f(x)(x-m)} &= P-0.01P\cos(m)e^{-\frac{1}{2}\left(P\right)}
+\end{align}
+and finally along the same lines we get 
+\begin{align}
+	\E{h(x)(x-m)} &= P\cos(2m)e^{-2\left(P\right)}
+\end{align}
+Putting these together, we have
 \begin{align}
 	\E{f(x_{k-1})} &= m_{k-1}-0.01\sin(m_{k-1})e^{-\frac{1}{2}P_{k-1}} \\
 	\E{f(x_{k-1})\delta x_{k-1}} &= P_{k-1}-0.01\cos(m_{k-1})P_{k-1}e^{-\frac{1}{2}P_{k-1}}
@@ -766,7 +805,7 @@ the SLF, we need the following expectations:
 	\shortintertext{where expectations are with respect to $N(x_{k}|m_{k}^-,P_{k}^-)$} 
 \end{align}
 
-The result of applying the SLF in the same situation as in \ref{sec:4_1a} is
+The results of applying the SLF in the same situation as in \ref{sec:4_1a} are
 presented also in figure~\ref{fig:ex_4_1}. The RMSE's for both of the methods
 is presented in table~\ref{table:rmse4_1} and the mcode is shown in listing~\ref{lst:4_1}.
 
@@ -793,7 +832,44 @@ in exercise~\ref{sec:4_1}}
 \lstinputlisting[linerange=1-78,caption={m-code in exercise~\ref{sec:4_1}},label=lst:4_1]{ex4_1.m}
 
 
-\subsection{}
+\subsection{}\label{sec:4_2}
+Here we derive an alternative form of SLF.
+\subsubsection{}\label{sec:4_2a}
+Let $\v{x}\in\R^d$, $\v{G}_\v{x}(\v{x})=\dpd{\v{g}(\v{x})}{\v{x}}$ and $N(\v{x}|\v{m},\v{P})$ is the gaussian pdf of $\v{x}$ with mean $\v{m}$ and covariance matrix $\v{P}$, then:
+\begin{align}
+	\E{\v{g}(\v{x})(\v{x}-\v{m})^T}&=\defint{\R^d}{}{\v{g}(\v{x})(\v{x}-\v{m})^TN(\v{x}|\v{m},\v{P})}{\v{x}}\\
+	&=\defint{\R^d}{}{\v{g}(\v{x})\v{P}\v{P}^{-1}(\v{x}-\v{m})^TN(\v{x}|\v{m},\v{P})}{\v{x}}\\
+	&=\defint{\R^d}{}{-\v{g}(\v{x})\v{P}\dpd{}{\v{x}}N(\v{x}|\v{m},\v{P})}{\v{x}}\\
+	&=\lim_{\v{x}\to-\infty}\left(\v{g}(\v{x})\v{P}N(\v{x}|\v{m},\v{P})\right)-\lim_{\v{x}\to\infty}\left(\v{g}(\v{x})\v{P}N(\v{x}|\v{m},\v{P})\right)+\defint{\R^d}{}{\v{G}_{\v{x}}(\v{x})N(\v{x}|\v{m},\v{P})}{\v{x}}\v{P}\\
+	&=\E{\v{G}_{\v{x}}(\v{x})}\v{P}
+\end{align}
+
+\subsubsection{}\label{sec:4_2b}
+Let $\gv{\mu}(\v{m})=\E{\v{g}(\v{x})}=\defint{\R^d}{}{\v{g}(\v{x})N(\v{x}|\v{m},\v{P})}{\v{x}}$, then
+\begin{align}
+	\dpd{\gv{\mu}}{\v{m}}&=\defint{\R^d}{}{\v{g}(\v{x})\dpd{}{\v{m}}N(\v{x}|\v{m},\v{P})}{\v{x}}\\
+	&=\defint{\R^d}{}{-\v{g}(\v{x})\v{P}^{-1}(\v{x}-\v{m})^TN(\v{x}|\v{m},\v{P})}{\v{x}}\\
+	&=\E{\v{G}_{\v{x}}(\v{x})}
+\end{align}
+
+\subsubsection{}\label{sec:4_2c}
+
+Using the result of \ref{sec:4_2a} and denoting the Jacobians of $\v{f}$ and $\v{h}$ by $\v{F}_\v{x}$ and $\v{H}_\v{x}$ respectively, we can write
+the SLF equations as
+
+\begin{align}
+	\shortintertext{prediction:}
+	\v{m}_k^-&=\E{\v{f}(\v{x}_{k-1})}\\
+	\v{P}_k^-&=\E{\v{F}_{\v{x}}(\v{x}_{k-1})}\v{P}_{k-1}^T\E{\v{F}_{\v{x}}(\v{x}_{k-1})}^T+\v{Q}_{k-1}
+	\shortintertext{update:}
+	\v{v}_k&=\v{y}_k-\E{\v{h}(\v{x}_k)}\\
+	\v{S}_k&=\E{\v{H}_{\v{x}}(\v{x}_{k})}(\v{P}^-_{k})^T\E{\v{H}_{\v{x}}(\v{x}_{k})}^T+\v{R}_k\\
+	\v{K}_k&=\E{\v{H}_{\v{x}}(\v{x}_{k})}^T\v{P}_k^-\v{S}_k^{-1}\\
+	\v{m}_k&=\v{m}_k^-+\v{K}_k\v{v}_k\\
+	\v{P}_k&=\v{P}_k^--\v{K}_k\v{S}_k\v{K}_k^T
+\end{align}
+
+
 
 \subsection{}\label{sec:4_3}
 \subsubsection{}\label{sec:4_3a}
@@ -998,9 +1074,45 @@ solution's variances in exercise~\ref{sec:7_1a}}
 
 \subsection{}\label{sec:7_3}
 \subsubsection{}\label{sec:7_3a}
+We proceed in the same fashion as in the derivation of the Kalman filter and the statistically linearized
+Kalman filter. The goal is to calculate the smoothing distribution $p(x._k|y._{1:T})$, where $T$ is the number
+of all the observations, with a recursive formula. Let's assume that we know the Gaussian filtering distributions $p(x._k|y._{1:k})=N(x._k|m._k,P._k)$
+and that we have a non-linear dynamical model with additive Gaussian noise: $x._{k+1}=f.(x._{k})+q._{k}$. Now taking
+into account the assumed Markov properties, we get
+\begin{align}
+	p(x._k,x._{k+1}|y._{1:k})&=p(x._{k+1}|x._k)p(x._k|y._{1:k}).
+\end{align}
+To make this Gaussian, we can apply the statistical linearization based Gaussian approximation, giving
+\begin{align}
+	p(x._k,x._{k+1}|y._{1:k})&=N(x._k,x._{k+1}|m._{1},P._{1})
+\end{align}
+Taking the marginal distribution of $x._{k+1}$ gives the prediction
+equations that I will present in the end. Taking again into account
+the conditional independence properties of the Markov chain we see that
+$p(x._k|x._{k+1},y._{1:T})=p(x._k|x._{k+1},y._{1:k})$ which is given by the 
+conditional distribution lemma of a joint normal distribution. Then
+\begin{align}
+	p(x._k,x._{k+1}|y._{1:T})&=p(x._k|x._{k+1},y._{1:k})p(x._{k+1}|y._{1:T})
+\end{align}
+where $p(x._{k+1}|y._{1:T})$ is the smoothing distribution of the previous step,
+is again joint normal, so that $p(x._k|y._{1:T})$ is given by the marginal
+distribution formula for the joint normal distribution.
+
+ 
+
+
+
+
+
+
+
+
+
 \subsubsection{}\label{sec:7_3b}
 \placefig[p]{ex_7_3}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SL RTS) filters in exercise~\ref{sec:7_2}}
 \subsubsection{}\label{sec:7_3c}
+
+
 
 
 %\bibliographystyle{plain}
