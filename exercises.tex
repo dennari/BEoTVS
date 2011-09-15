@@ -1055,12 +1055,23 @@ slight margin.
 
 \subsection{}
 \subsubsection{}\label{sec:7_1a}
+Here we have implemented the RTS smoother for the random walk model in exercise~\ref{sec:3_2}.
+The graphical results of the means are presented in figure~\ref{fig:ex_7_1a_means} and a comparison
+of the evolution of the variances of the Kalman filter and the RTS smoother is presented in
+figure~\ref{fig:ex_7_1a_variances}. As expected, the RTS smoother variance is smaller in general
+and equal to the Kalman filter variance when $k=n$.
+
 \placefig[p]{ex_7_1a_means}{1.0}{The measurements, the true signal, the Kalman filter solution mean and the RTS smoother
 solution mean in exercise~\ref{sec:7_1a}}
 \placefig[p]{ex_7_1a_variances}{1.0}{The Kalman filter solution's and the RTS smoother
 solution's variances in exercise~\ref{sec:7_1a}}
 
 \subsubsection{}\label{sec:7_1b}
+Here the exact smoother of the previous exercise is computed by a grid approximation,
+in a similar fashion as for the Kalman filter in exercise~\ref{sec:3_2}. The means and variances
+of the smoother and its grid approximation are presented in figures \ref{fig:ex_7_1b_means} and 
+\ref{fig:ex_7_1b_variances}. 
+
 \placefig[p]{ex_7_1b_means}{1.0}{The RTS smoother's and its grid approximation's means in exercise~\ref{sec:7_1b}}
 \placefig[p]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
 
@@ -1075,44 +1086,93 @@ solution's variances in exercise~\ref{sec:7_1a}}
 \subsection{}\label{sec:7_3}
 \subsubsection{}\label{sec:7_3a}
 We proceed in the same fashion as in the derivation of the Kalman filter and the statistically linearized
-Kalman filter. The goal is to calculate the smoothing distribution $p(x._k|y._{1:T})$, where $T$ is the number
-of all the observations, with a recursive formula. Let's assume that we know the Gaussian filtering distributions $p(x._k|y._{1:k})=N(x._k|m._k,P._k)$
-and that we have a non-linear dynamical model with additive Gaussian noise: $x._{k+1}=f.(x._{k})+q._{k}$. Now taking
+Kalman filter. The goal is to calculate the smoothing distribution $p(\v{x}_k|\v{y}_{1:T})$, where $T$ is the number
+of all the observations, with a recursive formula. Let's assume that we know the Gaussian filtering distributions $p(\v{x}_k|\v{y}_{1:k})=N(\v{x}_k|\v{m}_k,\v{P}_k)$
+and that we have a non-linear dynamical model with additive Gaussian noise: $\v{x}_{k+1}=\v{f}(\v{x}_{k})+\v{q}_{k}$. Now taking
 into account the assumed Markov properties, we get
 \begin{align}
-	p(x._k,x._{k+1}|y._{1:k})&=p(x._{k+1}|x._k)p(x._k|y._{1:k}).
+	p(\v{x}_k,\v{x}_{k+1}|\v{y}_{1:k})&=p(\v{x}_{k+1}|\v{x}_k)p(\v{x}_k|\v{y}_{1:k}).
 \end{align}
-To make this Gaussian, we can apply the statistical linearization based Gaussian approximation, giving
+To make this joint distribution Gaussian, we can apply the statistical linearization based Gaussian approximation, giving
 \begin{align}
-	p(x._k,x._{k+1}|y._{1:k})&=N(x._k,x._{k+1}|m._{1},P._{1})
+	p(\v{x}_k,\v{x}_{k+1}|\v{y}_{1:k})&=
+	N\left(
+	\begin{bmatrix}
+		\v{x}_k\\\v{x}_{k+1}
+	\end{bmatrix}\left\vert
+	\begin{bmatrix}
+		\v{m}_{k}\\
+		\v{m}_{k+1}^-
+	\end{bmatrix}
+	\right.,
+	\textrm{diag}\left(
+	\begin{bmatrix}
+		\v{m}_{k}\\
+		\v{P}_{k+1}^-
+	\end{bmatrix}
+	\right)\right)
 \end{align}
-Taking the marginal distribution of $x._{k+1}$ gives the prediction
+Taking the marginal distribution of $\v{x}_{k+1}$ gives the prediction
 equations that I will present in the end. Taking again into account
 the conditional independence properties of the Markov chain we see that
-$p(x._k|x._{k+1},y._{1:T})=p(x._k|x._{k+1},y._{1:k})$ which is given by the 
+$p(\v{x}_k|\v{x}_{k+1},\v{y}_{1:T})=p(\v{x}_k|\v{x}_{k+1},\v{y}_{1:k})$ which is given by the 
 conditional distribution lemma of a joint normal distribution. Then
 \begin{align}
-	p(x._k,x._{k+1}|y._{1:T})&=p(x._k|x._{k+1},y._{1:k})p(x._{k+1}|y._{1:T})
+	p(\v{x}_k,\v{x}_{k+1}|\v{y}_{1:T})&=p(\v{x}_k|\v{x}_{k+1},\v{y}_{1:k})p(\v{x}_{k+1}|\v{y}_{1:T}),
 \end{align}
-where $p(x._{k+1}|y._{1:T})$ is the smoothing distribution of the previous step,
-is again joint normal, so that $p(x._k|y._{1:T})$ is given by the marginal
-distribution formula for the joint normal distribution.
+where $p(\v{x}_{k+1}|\v{y}_{1:T})$ is the smoothing distribution of the previous step,
+is again joint normal, so that $p(\v{x}_k|\v{y}_{1:T})$ is given by the marginal
+distribution formula for the joint normal distribution. Putting all this together
+and using the matrix inversion lemma we get:
+
+\begin{align}
+	\shortintertext{prediction:}
+	\v{m}_{k+1}^-&=\E{\v{f}(\v{x}_{k})}\\
+	\v{P}_{k+1}^-&=\E{\v{f}(\v{x}_{k})\delta \v{x}_k^T}\v{P}_{k}^{-1}\E{\v{f}(\v{x}_{k})\delta \v{x}_k^T}^T+\v{Q}_k
+	\shortintertext{update:}
+	\v{G}_k&=\E{\v{f}(\v{x}_{k})\delta \v{x}_k^T}^T\left[\v{P}_{k+1}^-\right]^{-1}\\
+	\v{m}_k^s&=\v{m}_k+\v{G}_k\left[\v{m}_{k+1}^s-\v{m}_{k+1}^-\right]\\
+	\v{P}_k^s&=\v{P}_k+\v{G}_k\left[\v{P}_{k+1}^s-\v{P}_{k+1}^-\right]
+\end{align}
 
  
 
 
-
-
-
-
-
-
-
 \subsubsection{}\label{sec:7_3b}
-\placefig[p]{ex_7_3}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SL RTS) filters in exercise~\ref{sec:7_2}}
+Here we have implemented the statistically linearized RTS smoother and the
+extended RTS smoothers for the problem in exercise~\ref{sec:4_1}. Graphical comparison
+of the implemented filters and smoothers is presented in figure~\ref{fig:ex_7_3} and
+the RMSE's are compared in table~\ref{table:rmse7_3}.
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:7_3}}
+	\begin{tabular}{c c c c}
+		\otoprule
+		EKF & SLF & ERTS & SLRTS\\
+		\midrule
+		$0.946$ & $0.440$ & $0.946$ & $0.440$\\
+		\bottomrule
+	\end{tabular}
+	\label{table:rmse7_3}
+\end{table}
+
+
+\placefig[p]{ex_7_3}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SL RTS) filters in exercise~\ref{sec:7_3}}
+
 \subsubsection{}\label{sec:7_3c}
 
+This is analogical to exercise~\ref{sec:4_2c}:
 
+\begin{align}
+	\shortintertext{prediction:}
+	\v{m}_{k+1}^-&=\E{\v{f}(\v{x}_{k})}\\
+	\v{P}_{k+1}^-&=\E{\v{F}_{\v{x}}(\v{x}_{k})}\v{P}_{k}^{T}\E{\v{F}_{\v{x}}(\v{x}_{k})}^T+\v{Q}_k
+	\shortintertext{update:}
+	\v{G}_k&=\E{\v{F}_{\v{x}}(\v{x}_{k})}^T\left[\v{P}_{k+1}^-\right]^{-1}\\
+	\v{m}_k^s&=\v{m}_k+\v{G}_k\left[\v{m}_{k+1}^s-\v{m}_{k+1}^-\right]\\
+	\v{P}_k^s&=\v{P}_k+\v{G}_k\left[\v{P}_{k+1}^s-\v{P}_{k+1}^-\right]
+\end{align}
 
 
 %\bibliographystyle{plain}
