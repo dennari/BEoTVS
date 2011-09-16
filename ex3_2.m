@@ -25,24 +25,17 @@ y = s(1,x)+normrnd(mn,sqrt(r),1,n);
 %% Kalman filter
 m = 0;
 P = 1;
-m2 = 0;
-P2 = 1;
 ms = zeros(1,n);ms(1)=m;
-ms2 = zeros(1,n);
-Ps2 = zeros(1,n);
 Ps = zeros(1,n);Ps(1)=P;
-Ks = Ps;
+Ks = zeros(1,n-1);
 for k=2:n
-    % prediction
-    m_= m;
-    P_ = P+q;
     % update
-    K = P_/(P_+r);
-    m = m_+K*(y(k)-m_);
-    P = P_-(P_^2/(P_+r));
+    K = (P+q)/(P+q+r);
+    m = (1-K)*m+K*y(k);
+    P = P+q-K^2*(P+q+r);
     ms(k) = m;
     Ps(k) = P;
-    Ks(k) = K;
+    Ks(k-1) = K;
 end
 
 mso = ms;
@@ -84,14 +77,14 @@ if 1 % plot
     legend('Measurements','True','Discretization','Kalman');
     xlabel('Time');
     ylabel('Signal mean');
-    exportplot('ex_3_2_means.pdf',figW,figH);
+    exportplot('ex_3_2_means.pdf',figW,figH,gcf,1.5);
     % variances
     figure;
-    plot(x,dPs,x,Pso);
+    plot(x,dPs,x,Pso,'--');
     legend('Kalman','Discretization');
     xlabel('Time');
     ylabel('Variance');
-    exportplot('ex_3_2_variances.pdf',figW,figH);
+    exportplot('ex_3_2_variances.pdf',figW,figH,gcf,1.5);
 end
 
 
@@ -100,11 +93,11 @@ end
 
 m = 0;
 P = 1;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-for k=1:n
+ms = zeros(1,n);ms(1)=m;
+Ps = zeros(1,n);Ps(1)=P;
+for k=2:n
     m = (1-K)*m+K*y(k);
-    P = P-K^2/(P+r);
+    P = P+q-K^2*(P+q+r);
     ms(k) = m;
     Ps(k) = P;
 end
@@ -118,13 +111,11 @@ rmse(x,ms)
 
 %% RTS smoother
 
-
-
 mss = zeros(1,n);
 Pss = zeros(1,n);
-Gs = mss;
-m = mso(end);
-P = Pso(end);
+Gs = mss(1:n-1);
+m = mso(end); % mso = Kalman filter means
+P = Pso(end); % Pso = Kalman filter variances
 mss(end) = m;
 Pss(end) = P;
 
@@ -150,15 +141,15 @@ if 1 % plot
     legend('Measurements','True','Kalman','RTS');
     xlabel('Time');
     ylabel('Signal mean');
-    exportplot('ex_7_1a_means.pdf',figW,figH);
+    exportplot('ex_7_1a_means.pdf',figW,figH,gcf,1.5);
 
     % variances
     figure;
-    plot(x,Pso,x,Pss);
+    plot(x,Pso,x,Pss,'--');
     legend('Kalman','RTS');
     xlabel('Time');
     ylabel('Variance');
-    exportplot('ex_7_1a_variances.pdf',figW,figH);
+    exportplot('ex_7_1a_variances.pdf',figW,figH,gcf,1.5);
     
 end
 
@@ -197,31 +188,31 @@ if 1 %plot
     %hold on;
     %shading interp;
     %ylim([a b]);
-    plot(x,rts_discr_m,x,rts_m);
+    plot(x,rts_discr_m,x,rts_m,'--');
     legend('Discretization','RTS');
     xlabel('Time');
     ylabel('Signal mean');
-    exportplot('ex_7_1b_means.pdf',figW,figH);
+    exportplot('ex_7_1b_means.pdf',figW,figH,gcf,1.5);
     figure;
-    plot(x,rts_discr_P,x,rts_p);
+    plot(x,rts_discr_P,x,rts_p,'--');
     legend('Discretization','RTS');
     xlabel('Time');
     ylabel('Variance');
-    exportplot('ex_7_1b_variances.pdf',figW,figH);
+    exportplot('ex_7_1b_variances.pdf',figW,figH,gcf,1.5);
 end
 
 end
 
-
+%%
 
 if 1
 % RTS smoother -- using the stationary Kalman filter
 
 mss = zeros(1,n);
 Pss = zeros(1,n);
-G = Gs(20);
-m = ms_st(end);
-P = Ps_st(end);
+G = Gs(end);
+m = ms_st(end); % ms_st = stationary Kalman filter means
+P = Ps_st(end); % Ps_st = stationary Kalman filter variances
 mss(end) = m;
 Pss(end) = P;
 for k=n-1:-1:1
@@ -232,21 +223,17 @@ for k=n-1:-1:1
 end
 rmse(s,mss)
 if 1 %plot
-    %pcolor(1:n,t,distr);
-    %hold on;
-    %shading interp;
-    %ylim([a b]);
-    plot(x,mss,x,rts_m);
+    plot(x,mss,x,rts_m,'--');
     legend('Stat. RTS','RTS');
     xlabel('Time');
     ylabel('Signal mean');
-    exportplot('ex_7_1c_means.pdf',figW,figH);
+    exportplot('ex_7_1c_means.pdf',figW,figH,gcf,1.5);
     figure;
-    plot(x,Pss,x,rts_p);
+    plot(x,Pss,x,rts_p,'--');
     legend('Stat. RTS','RTS');
     xlabel('Time');
     ylabel('Variance');
-    exportplot('ex_7_1c_variances.pdf',figW,figH);
+    exportplot('ex_7_1c_variances.pdf',figW,figH,gcf,1.5);
 end
 
 end

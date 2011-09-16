@@ -217,11 +217,20 @@ we can write \eqref{eq:contsol} as
 \begin{align}
 	\v{x}(t_k)&=e^{\v{F}(t_k-t_0)}\v{x}(t_0)+\sum_{j=1}^k \defint{t_{j-1}}{t_j}{e^{\v{F}(t_j-s)}\v{L}w(s)}{s}\\
 	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\sum_{j=1}^k \defint{t_{j-1}}{t_j}{e^{\v{F}(t_j-s)}}{s}\v{L}w(t_{j-1})\\
-	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\sum_{j=1}^k (-\v{F}^{-1})\left(1-e^{\v{F}\Delta t}\right)\v{L}w(t_{j-1})\\
-	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L}\sum_{j=1}^k w(t_{j-1})\\
+	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\sum_{j=1}^k (-\v{F}^{-1})\left(\v{I}-e^{\v{F}\Delta t}\right)\v{L}w(t_{j-1})\\
+	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\v{F}^{-1}(e^{\v{F}\Delta t}-\v{I})\v{L}\sum_{j=1}^k w(t_{j-1})\\
 	%&=e^{\v{F}\Delta t}e^{\v{F}(k-1)\Delta t}\v{x}(t_0)+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L}\sum_{j=1}^{k-1} w(t_{j-1})+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L}\v{L} w(t_{k-1})\\
-	&=e^{\v{F}\Delta t}\v{x}(t_{k-1})+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L} w(t_{k-1})\\
+	&=e^{\v{F}\Delta t}\v{x}(t_{k-1})+\v{F}^{-1}(e^{\v{F}\Delta t}-\v{I})\v{L} w(t_{k-1})\\
 	&=\v{A}\v{x}(t_{k-1})+\v{B}w(t_{k-1})
+	\shortintertext{where}
+	\v{A}&=\begin{bmatrix}
+		1 & e^{-c^2\Delta t}\\
+		e^{\Delta t} & 1
+	\end{bmatrix}\\
+	\v{B}&=\begin{bmatrix}
+		e^{\Delta t}-1\\
+		0
+	\end{bmatrix}\\
 \end{align}
 
 % After discretizing the time into $n+1$ instants as $\{t_0=0,t_1=\Delta t,\dots,t_n=n\Delta t\}$ and assuming $w(s)=w(t_{k-1})\; \forall s\in[t_{k-1},t_k)$
@@ -236,21 +245,36 @@ we can write \eqref{eq:contsol} as
 
 \subsubsection{}
 
-Assuming $w_{k-1}\sim N(0,\frac{q_c}{\Delta t})$ and that at each timestep $t_k$ we measure 
+Assuming $w_{k-1}\sim N(0,\frac{q_c}{\Delta t})$ and $r_{k}\sim N(0,R_k)$ and that at each timestep $t_k$ we measure 
 the value of $x(t_k)$ and additive zero mean gaussian noise with variance $R_k$ and designating 
-$\v{x}_k=\v{x}(t_{k})$ we get the following linear Gaussian state space model:
+$\v{x}_k=\v{x}(t_{k})$ and $w_k=w(t_{k})$ we get the following linear Gaussian state space model:
 
 \begin{align}
 	%\v{x_k}&=\begin{bmatrix} 1 & e^{-c^2\Delta t}\\ e^{\Delta t} & 1 \end{bmatrix}\v{x}_{k-1}+\begin{bmatrix} 0 \\ -c^{-2}\left(e^{-c^2\Delta t}-1\right) \end{bmatrix}w_{k-1}\\
-	\v{x}_k&=\v{A}\v{x}_{k-1}+q_{k-1}\\
+	\v{x}_k&=\v{A}\v{x}_{k-1}+\v{B}w_{k-1}\\
 	y_k&=\begin{bmatrix} 0 & 1 \end{bmatrix}\v{x_k}+r_k \shortintertext{so that} \\
 	\v{x}_{k}|\v{x}_{k-1} &\sim N\left(\v{A}\v{x}_{k-1},\;\v{B}\frac{q_c}{\Delta t}\v{B}^T\right)\\
-	\v{y}_{k}|\v{x}_{k} &\sim N\left(x(k),\;R_k \right)   
+	y_{k}|\v{x}_{k} &\sim N\left(\begin{bmatrix} 0 & 1 \end{bmatrix}\v{x}_k,\;R_k \right)   
 \end{align}
 
 \subsubsection{}
 
-Solving the co
+Assuming $c=0$ we have
+\begin{align}
+	\v{M}=e^{(\Delta t-s)\v{F}}\v{L}q_c\v{L}^T\left(e^{(\Delta t-s)\v{F}}\right)^T&=
+	\begin{bmatrix}
+	q_c & q_ce^{\left(\Delta t-s\right)}\\
+	q_ce^{(\Delta t-s)} & q_ce^{2\left(\Delta t-s\right)}
+	\end{bmatrix}
+\end{align}
+and
+\begin{align}
+	\defint{0}{\Delta t}{\v{M}}{s}=
+	\begin{bmatrix}
+		q_c\Delta t & q_c\left(e^{\Delta t}-1\right)\\
+		q_c\left(e^{\Delta t}-1\right) & \frac{q_c}{2}\left(e^{2\Delta t}-1\right)
+	\end{bmatrix}
+\end{align}
 
 
 \section{}
@@ -1056,10 +1080,19 @@ slight margin.
 \subsection{}
 \subsubsection{}\label{sec:7_1a}
 Here we have implemented the RTS smoother for the random walk model in exercise~\ref{sec:3_2}.
+In this simple one dimensional case the RTS smoother equations are given by:
+\begin{align}
+	G_k &=\frac{P_k}{P_k+Q}\\
+	m_k^s&=m_k+G_k\left[m_{k+1}^s-m_k\right]\\
+	P_k^s&=P_k+G_k^2\left[P_{k+1}^s-P_{k}-Q\right]
+\end{align}
+
 The graphical results of the means are presented in figure~\ref{fig:ex_7_1a_means} and a comparison
 of the evolution of the variances of the Kalman filter and the RTS smoother is presented in
 figure~\ref{fig:ex_7_1a_variances}. As expected, the RTS smoother variance is smaller in general
-and equal to the Kalman filter variance when $k=n$.
+and equal to the Kalman filter variance when $k=n$. The m-code is shown in listing~\ref{lst:7_1a}.
+
+\lstinputlisting[linerange=112-129,caption={m-code in exercise~\ref{sec:7_1a}},label=lst:7_1a]{ex3_2.m}
 
 \placefig[p]{ex_7_1a_means}{1.0}{The measurements, the true signal, the Kalman filter solution mean and the RTS smoother
 solution mean in exercise~\ref{sec:7_1a}}
@@ -1070,16 +1103,38 @@ solution's variances in exercise~\ref{sec:7_1a}}
 Here the exact smoother of the previous exercise is computed by a grid approximation,
 in a similar fashion as for the Kalman filter in exercise~\ref{sec:3_2}. The means and variances
 of the smoother and its grid approximation are presented in figures \ref{fig:ex_7_1b_means} and 
-\ref{fig:ex_7_1b_variances}. 
+\ref{fig:ex_7_1b_variances}. The m-code is shown in listing~\ref{lst:7_1b}.
+
+\lstinputlisting[linerange=158-182,caption={m-code in exercise~\ref{sec:7_1b}},label=lst:7_1b]{ex3_2.m}
+
 
 \placefig[p]{ex_7_1b_means}{1.0}{The RTS smoother's and its grid approximation's means in exercise~\ref{sec:7_1b}}
 \placefig[p]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
 
 \subsubsection{}\label{sec:7_1c}
+If the stationary Kalman filter is used to provide the filtering distributions for the RTS smoother,
+the smoother is supposed to become a stationary backward filter. I have to admit I didn't quite
+get this. If an RTS smoother is based on the stationary Kalman filter, the resulting RTS smoother is different
+from a smoother where $G=\lim_{k\to\infty}G_k$. Here I choose to use the latter where $G_k=G$, whose
+value is taken as the last value from the smoother in \ref{sec:7_1a} (convergence was checked graphically).
+
+In figures \ref{fig:ex_7_1c_means} and \ref{fig:ex_7_1c_variances} the means and variances of the
+stationary and non-stationary (the smoother in \ref{sec:7_1a}) smoothers are compared and the m-code
+is shown in listing~\ref{lst:7_1c}
+
+\lstinputlisting[linerange=209-223,caption={m-code in exercise~\ref{sec:7_1c}},label=lst:7_1c]{ex3_2.m}
+
 \placefig[p]{ex_7_1c_means}{1.0}{The RTS and the stationary RTS smoother's means in exercise~\ref{sec:7_1c}}
 \placefig[p]{ex_7_1c_variances}{1.0}{The RTS and the stationary RTS smoother's variances in exercise~\ref{sec:7_1c}}
 
 \subsection{}\label{sec:7_2}
+
+Here we have implemented the RTS smoother to the resonator model in exercise~\ref{sec:3_3}.
+The performances of the base-line, the Kalman filter and the RTS smoother solutions
+are presented in table~\ref{table:rmse7_2}.
+
+
+
 
 \placefig[p]{ex_7_2}{1.0}{The Kalman filter's and RTS smoother's means in exercise~\ref{sec:7_2}}
 
