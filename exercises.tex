@@ -217,10 +217,11 @@ we can write \eqref{eq:contsol} as
 \begin{align}
 	\v{x}(t_k)&=e^{\v{F}(t_k-t_0)}\v{x}(t_0)+\sum_{j=1}^k \defint{t_{j-1}}{t_j}{e^{\v{F}(t_j-s)}\v{L}w(s)}{s}\\
 	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\sum_{j=1}^k \defint{t_{j-1}}{t_j}{e^{\v{F}(t_j-s)}}{s}\v{L}w(t_{j-1})\\
-	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\sum_{j=1}^k (-\v{F}^{-1})\left(\v{I}-e^{\v{F}\Delta t}\right)\v{L}w(t_{j-1})\\
-	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\v{F}^{-1}(e^{\v{F}\Delta t}-\v{I})\v{L}\sum_{j=1}^k w(t_{j-1})\\
-	%&=e^{\v{F}\Delta t}e^{\v{F}(k-1)\Delta t}\v{x}(t_0)+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L}\sum_{j=1}^{k-1} w(t_{j-1})+\v{F}^{-1}(e^{\v{F}\Delta t}-1)\v{L}\v{L} w(t_{k-1})\\
-	&=e^{\v{F}\Delta t}\v{x}(t_{k-1})+\v{F}^{-1}(e^{\v{F}\Delta t}-\v{I})\v{L} w(t_{k-1})\\
+\end{align}
+Now, because the of the constant time intervals, the integral inside the summation is also constant:
+\begin{align}	
+	&=e^{k\v{F}\Delta t}\v{x}(t_0)+\defint{0}{\Delta t}{e^{\v{F}(\Delta t-s)}}{s}\v{L}\sum_{j=1}^k w(t_{j-1})\\
+	&=e^{\v{F}\Delta t}\v{x}(t_{k-1})+\defint{0}{\Delta t}{e^{\v{F}(\Delta t-s)}}{s}\v{L} w(t_{k-1})\\
 	&=\v{A}\v{x}(t_{k-1})+\v{B}w(t_{k-1})
 	\shortintertext{where}
 	\v{A}&=\begin{bmatrix}
@@ -228,8 +229,8 @@ we can write \eqref{eq:contsol} as
 		e^{\Delta t} & 1
 	\end{bmatrix}\\
 	\v{B}&=\begin{bmatrix}
-		e^{\Delta t}-1\\
-		0
+		\Delta \\
+		e^{\Delta t} - 1
 	\end{bmatrix}\\
 \end{align}
 
@@ -257,6 +258,7 @@ $\v{x}_k=\v{x}(t_{k})$ and $w_k=w(t_{k})$ we get the following linear Gaussian s
 	y_{k}|\v{x}_{k} &\sim N\left(\begin{bmatrix} 0 & 1 \end{bmatrix}\v{x}_k,\;R_k \right)   
 \end{align}
 
+
 \subsubsection{}
 
 Assuming $c=0$ we have
@@ -267,14 +269,52 @@ Assuming $c=0$ we have
 	q_ce^{(\Delta t-s)} & q_ce^{2\left(\Delta t-s\right)}
 	\end{bmatrix}
 \end{align}
-and
+so that
 \begin{align}
-	\defint{0}{\Delta t}{\v{M}}{s}=
+	\v{Q}_{k-1}&=\defint{0}{\Delta t}{\v{M}}{s}=
 	\begin{bmatrix}
 		q_c\Delta t & q_c\left(e^{\Delta t}-1\right)\\
 		q_c\left(e^{\Delta t}-1\right) & \frac{q_c}{2}\left(e^{2\Delta t}-1\right)
 	\end{bmatrix}
 \end{align}
+The corresponding covariance matrix in the ZOH discretation case is
+\begin{align}
+	\v{B}\frac{q_c}{\Delta t}\v{B}^T&=\begin{bmatrix}
+		q_c\Delta t & q_c\left(e^{\Delta t}-1\right)\\
+		q_c\left(e^{\Delta t}-1\right) & \frac{q_c}{\Delta t}\left(e^{2\Delta t}-2e^{\Delta t}+1\right)
+	\end{bmatrix}
+\end{align}
+
+\subsection{}\label{sec:1_3}
+
+
+In this exercise Kalman filtering is practised with the help of the EKF/UKF toolbox.
+The results are illustrated in figure~\ref{fig:ex_1_3}, the RMSE values are presented
+in table~\ref{table:rmse_1_3} and the m-code is listed in listing~\ref{lst:1_3}.
+
+
+\begin{figure}[htb]
+  \begin{adjustwidth}{-2in}{-2in}
+	  \centering
+	  \subfloat[First components and
+	  measurements]{\label{fig:ex_1_3_signal}\includegraphics[width=0.7\textwidth]{ex_1_3_signal}}
+	  \subfloat[Second components]{\label{fig:ex_1_3_derivative}\includegraphics[width=0.7\textwidth]{ex_1_3_derivative}}
+  \end{adjustwidth}
+  	  \caption{Illustrations of the signal, the measurements and the Kalman filter means in exercise~\ref{sec:1_3}}
+	  \label{fig:ex_1_3}
+\end{figure}
+
+\begin{table}[h!]
+	\centering
+	\topcaption{RMSE values for the first component of the signal when the Kalman
+	filter means are used as the estimate and when the measuremenst are used as the estimate
+	in exercise~\ref{sec:1_3}}
+	\input{ex_1_3_rmse}
+	\label{table:rmse_1_3}
+\end{table} 
+
+\lstinputlisting[caption={m-code in exercise~\ref{sec:1_3}},label=lst:1_3]{ex1_3.m}
+
 
 
 \section{}
@@ -698,12 +738,7 @@ exercise~\ref{sec:3_3}}
 
 Unsurprisingly, the Kalman filter solution is clearly better than the baseline
 solution, which is directly affected by the noise. The root-mean-square errors
-for the solutions are presented in table~\ref{table:rmse3_3a}, from where
-it can be seen that the Kalman filter RMSE is $44$\% smaller. The relevant
-parts of the mcode for this exercise is shown in listing~\ref{lst:3_3a}.
-
-
-\lstinputlisting[linerange=89-119,caption={m-code in exercise~\ref{sec:3_3a}},label=lst:3_3a]{kf_ex.m}
+for the solutions are presented in table~\ref{table:rmse3_3a}.
 
 
 \subsubsection{\label{sec:3_3b}}
@@ -718,10 +753,8 @@ ordinary Kalman filter and the stationary Kalman filter carefully, it can be
 seen that during the first few steps, the stationary Kalman filter makes a
 better estimate. But since the Kalman gain seems to converge to its constant
 value very quickly, the solutions are close to identical after the first ten
-steps.The relevant
-parts of the mcode for this exercise is shown in listing~\ref{lst:3_3b}.
+steps.
 
-\lstinputlisting[linerange=152-172,caption={m-code in exercise~\ref{sec:3_3b}},label=lst:3_3b]{kf_ex.m}
 
 
 \placefig[p]{ex_3_3_statkalmansol}{1.0}{The stationary Kalman filter solution in
@@ -730,15 +763,13 @@ exercise~\ref{sec:3_3}}
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:3_3}}
-	\begin{tabular}{c c c}
-		\otoprule
-		Baseline & Kalman & Stationary Kalman\\
-		\midrule
-		$0.536$ & $0.237$ & $0.234$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_3_3_rmse}
 	\label{table:rmse3_3a}
 \end{table}
+
+\clearpage
+
+\lstinputlisting[linerange=89-151,caption={m-code in exercise~\ref{sec:3_3}},label=lst:3_3]{kf_ex.m}
 
 \section{}
 \subsection{}\label{sec:4_1}
@@ -834,20 +865,14 @@ presented also in figure~\ref{fig:ex_4_1}. The RMSE's for both of the methods
 is presented in table~\ref{table:rmse4_1} and the mcode is shown in listing~\ref{lst:4_1}.
 
 
-\placefig[p]{ex_4_1}{1.0}{The true signal and the EKF and SLF approximations
+\placefig[htb]{ex_4_1}{1.0}{The true signal and the EKF and SLF approximations
 in exercise~\ref{sec:4_1}}
 
 
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:4_1}}
-	\begin{tabular}{c c c}
-		\otoprule
-		EKF & SLF\\
-		\midrule
-		$1.83$ & $0.84$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_4_1_rmse}
 	\label{table:rmse4_1}
 \end{table}
 
@@ -855,6 +880,7 @@ in exercise~\ref{sec:4_1}}
 
 \lstinputlisting[linerange=1-78,caption={m-code in exercise~\ref{sec:4_1}},label=lst:4_1]{ex4_1.m}
 
+\clearpage
 
 \subsection{}\label{sec:4_2}
 Here we derive an alternative form of SLF.
@@ -920,20 +946,14 @@ in table~\ref{table:rmse4_3} and the mcode in listing~\ref{lst:4_3a}.
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:4_3a}}
-	\begin{tabular}{c c c}
-		\otoprule
-		Baseline & EKF\\
-		\midrule
-		$1.019$ & $0.441$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_4_3_rmse}
 	\label{table:rmse4_3}
 \end{table}
 
 \clearpage
 
 
-\lstinputlisting[linerange=141-182,caption={m-code in exercise~\ref{sec:4_3a}},label=lst:4_3a]{angle_ex.m}
+\lstinputlisting[linerange=146-208,caption={m-code in exercise~\ref{sec:4_3a}},label=lst:4_3a]{angle_ex.m}
 
 \section{}
 
@@ -1228,6 +1248,7 @@ This is analogical to exercise~\ref{sec:4_2c}:
 	\v{m}_k^s&=\v{m}_k+\v{G}_k\left[\v{m}_{k+1}^s-\v{m}_{k+1}^-\right]\\
 	\v{P}_k^s&=\v{P}_k+\v{G}_k\left[\v{P}_{k+1}^s-\v{P}_{k+1}^-\right]
 \end{align}
+
 
 
 %\bibliographystyle{plain}

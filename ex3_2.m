@@ -40,7 +40,7 @@ end
 
 mso = ms;
 Pso = Ps;
-rmse(x,ms)
+R(1) = rmse(x,ms);
 
 % discretization
 a=min(y);
@@ -72,15 +72,15 @@ if 1 % plot
     % means, measurements
     plot(x,y,'.k',...
         1:n,s,...
-        x,dms,...
-        x,mso);
-    legend('Measurements','True','Discretization','Kalman');
+        x,mso,...
+        x,dms,'--');
+    legend('Measurements','True','Kalman','Discretization');
     xlabel('Time');
     ylabel('Signal mean');
     exportplot('ex_3_2_means.pdf',figW,figH,gcf,1.5);
     % variances
     figure;
-    plot(x,dPs,x,Pso,'--');
+    plot(x,Pso,x,dPs,'--');
     legend('Kalman','Discretization');
     xlabel('Time');
     ylabel('Variance');
@@ -104,7 +104,7 @@ end
 %kalmansolution = plot(x,ms,'-k');
 ms_st = ms;
 Ps_st = Ps;
-rmse(x,ms)
+R(2) = rmse(x,ms);
 
 
 
@@ -127,7 +127,7 @@ for k=n-1:-1:1
     mss(k) = m;
     Pss(k) = P;
 end
-rmse(s,mss)
+R(3) = rmse(s,mss);
 rts_m = mss;
 rts_p = Pss;
 
@@ -221,7 +221,7 @@ for k=n-1:-1:1
     mss(k) = m;
     Pss(k) = P;
 end
-rmse(s,mss)
+R(4) = rmse(s,mss);
 if 1 %plot
     plot(x,mss,x,rts_m,'--');
     legend('Stat. RTS','RTS');
@@ -234,6 +234,10 @@ if 1 %plot
     xlabel('Time');
     ylabel('Variance');
     exportplot('ex_7_1c_variances.pdf',figW,figH,gcf,1.5);
+    
+    matrix2latex(R,'ex_1_3_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
 end
 
 end

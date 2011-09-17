@@ -72,26 +72,22 @@
   % Plot the signal and its estimate
   figure;
   subplot(2,1,1);
-  plot(T,X(1,:),'--',T,EST1(1,:),'-',T,Y,'.','MarkerSize',10);
+  plot(T,X(1,:),'-',T,EST1(1,:),'--',T,Y,'k.','MarkerSize',8);
   legend('True signal','Estimated signal','Measurements');
   
   % Plot the derivative and its estimate
   subplot(2,1,2);
-  plot(T,X(2,:),'--',T,EST1(2,:),'-');
+  plot(T,X(2,:),'-',T,EST1(2,:),'--');
   legend('True derivative','Estimated derivative');
-  exportplot('ex_3_3_basesol.pdf',figW,figH);
+  exportplot('ex_3_3_basesol.pdf',figW,figH,gcf,1.5);
   % Compute error
-  err1 = rmse(X,EST1)
+  err1 = rmse(X,EST1);
   
   fprintf('This is the base line estimate. Press enter.\n');
   
-  %%
+  
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %
-  % Kalman filter solution. The estimates
-  % of x_k are stored as columns of
-  % the matrix EST2.
-  %
+  % Kalman filter solution
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   m = x0;     % Initialize to true value
@@ -121,27 +117,23 @@
   % Plot the signal and its estimate
   figure;
   subplot(2,1,1);
-  plot(T,X(1,:),'--',T,EST2(1,:),'-',T,Y,'.','MarkerSize',10);
+  plot(T,X(1,:),'-',T,EST2(1,:),'--',T,Y,'k.','MarkerSize',8);
   legend('True signal','Estimated signal','Measurements');
   
   % Plot the derivative and its estimate
   subplot(2,1,2);
-  plot(T,X(2,:),'--',T,EST2(2,:),'-');
+  plot(T,X(2,:),'-',T,EST2(2,:),'--');
   legend('True derivative','Estimated derivative');
-  exportplot('ex_3_3_kalmansol.pdf',figW,figH);
+  exportplot('ex_3_3_kalmansol.pdf',figW,figH,gcf,1.5);
 
 
   % Compute error
-  err2 = rmse(X,EST2)  
+  err2 = rmse(X,EST2);  
 
-%%
+
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %
-  % Stationary Kalman filter solution.
-  % The estimates of x_k are stored as columns of
-  % the matrix EST3.
-  %
+  % Stationary Kalman filter solution
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   m3 = x0;     % Initialize to true value
@@ -161,19 +153,25 @@
   % Plot the signal and its estimate
   figure;
   subplot(2,1,1);
-  plot(T,X(1,:),'--',T,EST3(1,:),'-',T,Y,'.','MarkerSize',10);
+  plot(T,X(1,:),'-',T,EST3(1,:),'--',T,Y,'k.','MarkerSize',8);
   legend('True signal','Estimated signal','Measurements');
   
   % Plot the derivative and its estimate
   subplot(2,1,2);
-  plot(T,X(2,:),'--',T,EST3(2,:),'-');
+  plot(T,X(2,:),'-',T,EST3(2,:),'--');
   legend('True derivative','Estimated derivative');
-exportplot('ex_3_3_statkalmansol.pdf',figW,figH);
+  exportplot('ex_3_3_statkalmansol.pdf',figW,figH,gcf,1.5);
   
   
   % Compute error
-  err3 = rmse(X,EST3)
-    
+  err3 = rmse(X,EST3);
+  
+    rLabels = {'RMSE'};
+    cLabels = {'Baseline' 'Kalman' 'Stat. Kalman'};
+    matrix2latex([err1 err2 err3],'ex_3_3_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+  
  
  %%
 
@@ -226,7 +224,7 @@ end
   
   exportplot('ex_7_2.pdf',figW,figH);
   
-  err3 = rmse(X,mss)
+  err4 = rmse(X,mss);
   
   
   

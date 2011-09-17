@@ -82,54 +82,66 @@ function []=angle_ex(figW,figH)
 
 
     R  = sd^2*eye(size(S,2));   % The joint covariance
-    
-    
-    f1 = figure;ax(1) = gca;
-    baseline();
-    axis equal;
-    legend('True','Baseline');
-    
-    
-    f2 = figure;ax(2) = gca;
-    linkaxes(ax);
-    ekf();
-    axis equal;
-    legend('True','EKF');    
-    xlim([-2 2]);ylim([-2.2 2]);
-%     
-%     exportplot('ex_4_3_baseline.pdf',figW,figH,f1);
-%     exportplot('ex_4_3_ekf.pdf',figW,figH,f2);
-    
-%     f3 = figure;ax(1) = gca;
-%     ckf();
-%     axis equal;
-%     legend('True','CKF/UKF');
-%     
-%     f4 = figure;ax(2) = gca;
-%     linkaxes(ax);
-%     ukf();
-%     axis equal;
-%     legend('True','UKF');    
-%     xlim([-2 2]);ylim([-2.2 2]);
-%     
-%     exportplot('ex_5_3_ckfukf.pdf',figW,figH,f3);
-    %exportplot('ex_5_3_ukf.pdf',figW,figH,f4);
-    
-    f5 = figure;ax(1) = gca;
-    bootstrap();
-    axis equal;
-    legend('True','Bootstrap');
-    
-    f6 = figure;ax(2) = gca;
-    linkaxes(ax);
-    sir();
-    axis equal;
-    legend('True','SIR');    
-    xlim([-2 2]);ylim([-2.2 2]);
-    
-    exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5);
-    exportplot('ex_6_3_sir.pdf',figW,figH,f6);
-    
+    rLabels = {'RMSE'};
+    if 1
+        f1 = figure;ax(1) = gca;
+        M1 = baseline();
+        axis equal;
+        legend('True','Baseline');
+
+
+        f2 = figure;ax(2) = gca;
+        linkaxes(ax);
+        M2 = ekf();
+        axis equal;
+        legend('True','EKF');    
+        xlim([-2 2]);ylim([-2.2 2]);
+
+        exportplot('ex_4_3_baseline.pdf',figW,figH,f1,1.5);
+        exportplot('ex_4_3_ekf.pdf',figW,figH,f2,1.5);
+           
+        cLabels = {'Baseline' 'EKF'};
+        matrix2latex([rmse(X,M1) rmse(X,M2)],'ex_4_3_rmse.tex',...
+               'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+               'rowLabels',rLabels,'rowLabelAlignment','r');
+    end
+    if 0
+        f3 = figure;ax(1) = gca;
+        M3 = ckf();
+        axis equal;
+        legend('True','CKF/UKF');
+
+        f4 = figure;ax(2) = gca;
+        linkaxes(ax);
+        M4 = ukf();
+        axis equal;
+        legend('True','UKF');    
+        xlim([-2 2]);ylim([-2.2 2]);
+
+        exportplot('ex_5_3_ckfukf.pdf',figW,figH,f3);
+        exportplot('ex_5_3_ukf.pdf',figW,figH,f4);
+        
+        cLabels = {'CKF' 'UKF'};
+        matrix2latex([rmse(X,M3) rmse(X,M4)],'ex_5_3_rmse.tex',...
+               'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+               'rowLabels',rLabels,'rowLabelAlignment','r');
+    end
+    if 0
+        f5 = figure;ax(1) = gca;
+        bootstrap();
+        axis equal;
+        legend('True','Bootstrap');
+
+        f6 = figure;ax(2) = gca;
+        linkaxes(ax);
+        sir();
+        axis equal;
+        legend('True','SIR');    
+        xlim([-2 2]);ylim([-2.2 2]);
+
+        exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5);
+        exportplot('ex_6_3_sir.pdf',figW,figH,f6);
+    end
    
     function [o,h]=baseline()
         m = x0;     % Initialize to true value
@@ -142,28 +154,21 @@ function []=angle_ex(figW,figH)
             dx2 = cos(Theta(2,k));
             dy2 = sin(Theta(2,k));
             d = [dx1 dx2; dy1 dy2]\[S(1,2)-S(1,1);S(2,2)-S(2,1)];
-
             cross_xy = S(:,1) + [dx1;dy1]*d(1);
-
             %% Compute estimate
             m(3:4) = [0;0];
             m(1:2) = cross_xy;
             ms(:,k) = m;
-
-            %anim();
-
         end
 
         fprintf('BL %3.4f\n',rmse(X,ms));
-        h= showtrace('g');
+        h= showtrace('b');
         %disp(h);
         o = ms;
     end
 
-
-    %%%%%%%%%%%%%%%%%%%
     %%%% EKF %%%%%%%%%%
-    %%%%%%%%%%%%%%%%%%%
+    
     function [o,hh]=ekf()
         m = x0;            % Initialize to true value
         P = eye(4);        % Some uncertainty
@@ -178,11 +183,8 @@ function []=angle_ex(figW,figH)
             K = P_*H(m_)'/S_;
             m = m_+K*v;
             P = P_-K*S_*K';
-
-
             ms(:,k) = m;
             Ps(:,:,k) = P;
-
         end
 
         %% Compute error

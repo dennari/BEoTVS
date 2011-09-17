@@ -9,8 +9,8 @@ F=@(x)-0.01*cos(x);
 h=@(x)0.5*sin(2*x); 
 H=@(x)cos(2*x);
 Y=s;
-%x0 = 0.8*pi;
-x0 = 0;
+x0 = 0.4*pi;
+%x0 = 0;
 x = x0;
 for k=1:N
     x = f(x)+sqrt(q)*randn;
@@ -23,16 +23,14 @@ mn = 0;
 n = 150;
 x = floor(1:N/n:N);
 y = h(s(1,x))+normrnd(0,sqrt(r),1,n);
-plot(x,y,'.k',1:N,s,'MarkerSize',8);
-hold on;
 
-%% EKF
+% EKF
 
 m = x0;
-P = 1;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-for k=1:n
+P = q;
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
+for k=2:n
     % prediction
     m_= f(m);
     P_ = F(m)^2*P+q;
@@ -47,13 +45,10 @@ for k=1:n
 end
 ms_ekf = ms;
 Ps_ekf = Ps;
-plot(x,ms,'-r');
 fprintf('EKF %3.4f\n',rmse(s(x),ms));
-%% SLF
-es=@(m,p)m-...
-        (m^3+3*m*p^2)/6+...
-        (m^5+10*m^3*p^2+15*m*p^4)/120-...
-        (m^7+21*m^5*p^2+105*m^3*p^4+105*m*p^6)/(7*6*5*4*3*2);
+R(1) = rmse(s(x),ms);
+
+% SLF
 
 Ef=@(m,p)m-0.01*sin(m)*exp(-1*p/2);
 Efdx=@(m,p)p-0.01*cos(m)*p*exp(-p/2);
@@ -62,9 +57,9 @@ Ehdx=@(m,p)cos(2*m)*p*exp(-2*p);
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-for k=1:n
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
+for k=2:n
     % prediction
     m_= Ef(m,P);
     P_ = Efdx(m,P)^2/P+q;
@@ -79,13 +74,24 @@ for k=1:n
 end
 ms_slkf = ms;
 Ps_slkf = Ps;
-plot(x,ms,'-g');
-% legend('Meas.','True','EKF','SLF');
-% xlabel('t');
-% ylabel('m_k');
-% fprintf('SLF %3.4f\n',rmse(s(x),ms));
-% exportplot('ex_4_1.pdf',figW,figH);
+R(2) = rmse(s(x),ms); fprintf('SLF %3.4f\n',rmse(s(x),ms));
 
+if 1
+    plot(x,y,'.k',1:N,s,x,ms_ekf,x,ms_slkf,'MarkerSize',8);
+    legend('Meas.','True','EKF','SLF');
+    xlabel('t');
+    ylabel('m_k');
+    
+    
+    exportplot('ex_4_1.pdf',figW,figH,gcf,1.5);
+    
+    rLabels = {'RMSE'};
+    cLabels = {'EKF' 'SLF'};
+    matrix2latex(R,'ex_4_1_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+    
+end
 %% UKF
 
 m = x0;
