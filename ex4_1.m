@@ -10,6 +10,7 @@ h=@(x)0.5*sin(2*x);
 H=@(x)cos(2*x);
 Y=s;
 x0 = 0.4*pi;
+R = [];
 %x0 = 0;
 x = x0;
 for k=1:N
@@ -99,7 +100,7 @@ P = q;
 ms = zeros(1,n);
 Ps = zeros(1,n);
 sig = zeros(0,3);
-alpha = 1; kappa = 0;
+alpha = 12; kappa = 1;
 lambda = alpha^2*(1+kappa) - 1;
 Wi = 1/(2*(1+lambda));
 Wm = [lambda/(1+lambda) Wi Wi];
@@ -124,14 +125,19 @@ for k=1:n
     ms(k) = m;
     Ps(k) = P;
 end
-
-% plot(x,ms,'-g');
-% fprintf('UKF %3.4f\n',rmse(s(x),ms));
-% legend('Meas.','True','EKF','UKF');
-% xlabel('t');
-% ylabel('m_k');
-% fprintf('SLF %3.4f\n',rmse(s(x),ms));
-% exportplot('ex_5_1.pdf',figW,figH);
+R(3) = rmse(s(x),ms);
+if 1
+    plot(1:N,s,x,ms,x,ms_slkf,'--');
+    legend('True','UKF','SLF');
+    xlabel('t');
+    ylabel('m_k');
+    exportplot('ex_5_1.pdf',figW,figH,gcf,1.5);
+    rLabels = {'RMSE'};
+    cLabels = {'EKF' 'SLF' 'UKF'};
+    matrix2latex(R,'ex_5_1_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+end
 
 %% GHKF
 
@@ -163,11 +169,10 @@ for k=1:n
     ms(k) = m;
     Ps(k) = P;
 end
+R(4) = rmse(s(x),ms);
+ms_ghkf = ms;
 
-plot(x,ms,'-m');
-fprintf('GHKF %3.4f\n',rmse(s(x),ms));
-
-%% CKF
+% CKF
 
 m = x0;
 P = q;
@@ -198,18 +203,22 @@ for k=1:n
     ms(k) = m;
     Ps(k) = P;
 end
-
+R(5) = rmse(s(x),ms);
 ms_ckf = ms;
 Ps_ckf = Ps;
 
-plot(x,ms,'-k');
-fprintf('CKF %3.4f\n',rmse(s(x),ms));
-
-legend('Meas.','True','GHKF','CKF');
-xlabel('t');
-ylabel('m_k');
-fprintf('SLF %3.4f\n',rmse(s(x),ms));
-%exportplot('ex_5_2.pdf',figW,figH);
+if 1
+    plot(1:N,s,x,ms_ckf,x,ms_ghkf,'--');
+    legend('True','CKF','GHKF');
+    xlabel('t');
+    ylabel('m_k');
+    exportplot('ex_5_2.pdf',figW,figH,gcf,1.5);
+    rLabels = {'RMSE'};
+    cLabels = {'EKF' 'SLF' 'UKF' 'GHKF' 'CKF'};
+    matrix2latex(R,'ex_5_2_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+end
 
 %% bootstrap
 

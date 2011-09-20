@@ -959,20 +959,30 @@ in table~\ref{table:rmse4_3} and the mcode in listing~\ref{lst:4_3a}.
 
 \subsection{}\label{sec:5_1}
 
-Here we implement the unscented Kalman filter for the problem in exercise \ref{sec:4_1}
-The graphical results are presented in figure \ref{fig:ex_5_1}, where the UKF solution
-is compared with the EKF solution, and the mcode in shown listing~\ref{lst:5_1}. With
-the chosen parameter values the UKF and SLF solutions become identical and so the RMSE's
-are also identical.
+Here we implement the unscented Kalman filter for the problem in exercise \ref{sec:4_1}.
+The parameters of the UKF transformation (which affect the sigma point spread) were chosen as follows:
+\begin{align}
+	\alpha = 12\\
+	\kappa = 1
+\end{align}
+The graphical results are illustrated in figure \ref{fig:ex_5_1}, where the UKF solution
+is compared with the SLF solution and the true signal. The RMSE values
+are tabulated in table~\ref{table:rmse5_1}. The mcode in shown listing~\ref{lst:5_1}. 
 
-\placefig[p]{ex_5_1}{1.0}{The true signal and the EKF and UKF approximations
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:5_1}}
+	\input{ex_5_1_rmse}
+	\label{table:rmse5_1}
+\end{table}
+
+\placefig[htb]{ex_5_1}{1.0}{The true signal and the UKF and SLF approximations
 in exercise~\ref{sec:5_1}}
 
 
 \clearpage
 
-\lstinputlisting[linerange=89-120,caption={m-code in exercise~\ref{sec:5_1}},label=lst:5_1]{ex4_1.m}
-
+\lstinputlisting[linerange=96-127,caption={m-code in exercise~\ref{sec:5_1}},label=lst:5_1]{ex4_1.m}
 
 
 
@@ -980,18 +990,30 @@ in exercise~\ref{sec:5_1}}
 
 Here also the Gauss-Hermite Kalman filter (GHKF) and the cubature Kalman filter (CKF)
 were implemented for the previous problem. The solutions of these methods were
-identical no matter what the order of the polynomial chosen for GHKF. The solutions
-are also identical to the UKF (with the chosen parameters) and SLF solutions. The mcode
-is presented in listing~\ref{lst:5_2}.
+indistinguishable no matter what the order of the polynomial chosen for GHKF. It is possible
+to make the UKF, GHKF and CKF methods identical by choosing the UKF parameters as $\alpha = 1$ 
+and $\kappa=0$ and the GHKF polynomial order as $2$. The RMSE values of all the considered methods
+are presented in table~\ref{table:rmse5_2}.The m-code is presented in listing~\ref{lst:5_2}.
 
-\lstinputlisting[linerange=130-194,caption={m-code in exercise~\ref{sec:5_2}},label=lst:5_2]{ex4_1.m}
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:5_2}}
+	\input{ex_5_2_rmse}
+	\label{table:rmse5_2}
+\end{table}
+
+\placefig[htb]{ex_5_2}{1.0}{The true signal and the GHKF and CKF approximations
+in exercise~\ref{sec:5_2}}
+\clearpage
+\lstinputlisting[linerange=142-208,caption={m-code in exercise~\ref{sec:5_2}},label=lst:5_2]{ex4_1.m}
 
 
 \subsection{}\label{sec:5_3}
 
 Here we implement the UKF and the CKF for the target tracking problem in exercise \ref{sec:4_3}.
-Again the parameters for UKF were chosen so that these two methods became identical
-The graphical results are presented in figure \ref{fig:ex_5_3}, where the UKF/CKF and EKF solutions
+The parameters for UKF were chosen so that there would some differences in the solution. It seems
+that increasing the parameter values makes the result worse in the beginning
+The graphical results are presented in figure \ref{fig:ex_5_3}, where the UKF and CKF solutions
 are compared and the mcode in shown listing~\ref{lst:5_3}. The updated RMSE values are presented
 in table~\ref{table:rmse5_3}. As can be seen, the CKF/UKF approximation is better but only by a very
 slight margin. 
@@ -999,8 +1021,8 @@ slight margin.
 \begin{figure}[htb]
   \begin{adjustwidth}{-2in}{-2in}
 	  \centering
-	  \subfloat[EKF approximation]{\label{fig:ex_5_3_ekf}\includegraphics[width=0.7\textwidth]{ex_4_3_ekf}}                
-	  \subfloat[CKF/UKF approximation]{\label{fig:ex_5_3_ckfukf}\includegraphics[width=0.7\textwidth]{ex_5_3_ckfukf}}
+	  \subfloat[CKF approximation]{\label{fig:ex_5_3_ckf}\includegraphics[width=0.7\textwidth]{ex_5_3_ckf}}                
+	  \subfloat[UKF approximation]{\label{fig:ex_5_3_ukf}\includegraphics[width=0.7\textwidth]{ex_5_3_ukf}}
   \end{adjustwidth}
   	  \caption{The true trajectory, the EKF approximation and the CKF/UKF approximation in exercise~\ref{sec:5_3}}
 	  \label{fig:ex_5_3}
@@ -1010,20 +1032,14 @@ slight margin.
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:5_3}}
-	\begin{tabular}{c c c}
-		\otoprule
-		Baseline & EKF & CKF/UKF\\
-		\midrule
-		$1.019$ & $0.441$ & $0.438$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_5_3_rmse}
 	\label{table:rmse5_3}
 \end{table}
 
 
 \clearpage
 
-\lstinputlisting[linerange=210-292,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
+\lstinputlisting[linerange=218-307,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
 
 \section{}
 \subsection{}
@@ -1082,13 +1098,7 @@ slight margin.
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:6_3}}
-	\begin{tabular}{c c c}
-		\otoprule
-		Bootstrap & SIR\\
-		\midrule
-		$0.946$ & $0.440$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_6_3_rmse}
 	\label{table:rmse6_3}
 \end{table}
 

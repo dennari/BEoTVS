@@ -83,7 +83,8 @@ function []=angle_ex(figW,figH)
 
     R  = sd^2*eye(size(S,2));   % The joint covariance
     rLabels = {'RMSE'};
-    if 1
+    % exercise 4.3
+    if 0
         f1 = figure;ax(1) = gca;
         M1 = baseline();
         axis equal;
@@ -105,11 +106,16 @@ function []=angle_ex(figW,figH)
                'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
+    % exercise 5.3
     if 0
+        
+        M1 = baseline();
+        M2 = ekf();
+        
         f3 = figure;ax(1) = gca;
         M3 = ckf();
         axis equal;
-        legend('True','CKF/UKF');
+        legend('True','CKF');
 
         f4 = figure;ax(2) = gca;
         linkaxes(ax);
@@ -118,29 +124,42 @@ function []=angle_ex(figW,figH)
         legend('True','UKF');    
         xlim([-2 2]);ylim([-2.2 2]);
 
-        exportplot('ex_5_3_ckfukf.pdf',figW,figH,f3);
-        exportplot('ex_5_3_ukf.pdf',figW,figH,f4);
+        exportplot('ex_5_3_ckf.pdf',figW,figH,f3,1.5);
+        exportplot('ex_5_3_ukf.pdf',figW,figH,f4,1.5);
         
-        cLabels = {'CKF' 'UKF'};
-        matrix2latex([rmse(X,M3) rmse(X,M4)],'ex_5_3_rmse.tex',...
+        cLabels = {'Baseline' 'EKF' 'CKF' 'UKF'};
+        matrix2latex([rmse(X,M1) rmse(X,M2) rmse(X,M3) rmse(X,M4)],'ex_5_3_rmse.tex',...
                'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
-    if 0
+    % exercise 6.3
+    if 1
+        M1 = baseline();
+        M2 = ekf();
+        M3 = ckf();
+        M4 = ukf();
+        
         f5 = figure;ax(1) = gca;
-        bootstrap();
+        M5 = bootstrap();
         axis equal;
         legend('True','Bootstrap');
 
         f6 = figure;ax(2) = gca;
         linkaxes(ax);
-        sir();
+        M6 = sir();
         axis equal;
         legend('True','SIR');    
         xlim([-2 2]);ylim([-2.2 2]);
 
         exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5);
         exportplot('ex_6_3_sir.pdf',figW,figH,f6);
+        
+        cLabels = {'Baseline' 'EKF' 'CKF' 'UKF' 'Bootstrap' 'SIR'};
+        matrix2latex([rmse(X,M1) rmse(X,M2) rmse(X,M3) rmse(X,M4) rmse(X,M5) rmse(X,M6)],'ex_6_3_rmse.tex',...
+               'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+               'rowLabels',rLabels,'rowLabelAlignment','r');
+        
+        
     end
    
     function [o,h]=baseline()
@@ -209,7 +228,7 @@ function []=angle_ex(figW,figH)
 
 
 
-    function ms = ckf()
+    function o = ckf()
 
         m = x0;            % Initialize to true value
         P = eye(4);        % Some uncertainty
@@ -223,6 +242,7 @@ function []=angle_ex(figW,figH)
 
           %% Compute error
         fprintf('CKF %3.4f\n',rmse(X,ms));
+        o = ms;
         showtrace('b');
     end
 
@@ -255,19 +275,25 @@ function []=angle_ex(figW,figH)
 
 
 
-    function ms=ukf()
+    function o=ukf()
         m = x0;            % Initialize to true value
         P = eye(4);        % Some uncertainty
         ms = zeros(4,steps);
         n = 4;
         nn = size(S,2);
-        alpha = 1; kappa = 0;
+        alpha = 7; beta = 0; kappa = 20;
         lambda = alpha^2*(1+kappa) - 1;
         e = [zeros(n,1) sqrt(n+lambda)*eye(n) -sqrt(n+lambda)*eye(n)]; % unit sigma points
         Wm = [lambda/(n+lambda) 1/(2*(n+lambda))*ones(1,2*n)];
-        Wc = [lambda/(n+lambda)+(1-alpha^2) 1/(2*(n+lambda))*ones(1,2*n)];
+        Wc = [lambda/(n+lambda)+(1-alpha^2+beta) 1/(2*(n+lambda))*ones(1,2*n)];
         for k=1:steps
             % prediction
+            [m_,P_] = ukf_predict1(m,P,@(x,S)A*x,Q,[],alpha,beta,kappa);
+            % update
+            [m,P,~,~,~,~] = ukf_update1(m_,P_,Theta(:,k),@(x,S)h(x),R,[],alpha,beta,kappa);
+            ms(:,k) = m;
+            Ps(:,:,k) = P;
+            continue;
             sig = repmat(m,1,2*n+1)+chol(P,'lower')*e;
             sig = A*sig;
             m_ = sig*Wm';
@@ -284,16 +310,16 @@ function []=angle_ex(figW,figH)
             C = (sig_-m__)*diag(Wc)*(sigY-u__)';
             K = C/S_;
             m = m_+K*(Theta(:,k)-u);
-            P = P_-K*S_*K';
+            P = P_-K*S_*K'
             ms(:,k) = m;
             Ps(:,:,k) = P;
         end
-
+        o = ms;
         fprintf('UKF %3.4f\n',rmse(X,ms));
-        showtrace();
+        showtrace('b');
     end
 
-    function ms=bootstrap()
+    function o=bootstrap()
         P = eye(4);        % Some uncertainty
         ms = zeros(4,steps);
         ii = zeros(1,steps);
@@ -319,13 +345,13 @@ function []=angle_ex(figW,figH)
             ms(:,k) = p*W';
             %anim();
         end
-
+        o = ms;
         %% Compute error
         fprintf('BOOTSTRAP %3.4f\n',rmse(X,ms));
         showtrace();
     end
 
-    function ms=sir()
+    function o=sir()
         m = x0;
         P = eye(4);        % Some uncertainty
         ms = zeros(4,steps);
@@ -383,6 +409,7 @@ function []=angle_ex(figW,figH)
         end
         c
         %% Compute error
+        o = ms;
         fprintf('SIR %3.4f\n',rmse(X,ms));
         showtrace();
     end
