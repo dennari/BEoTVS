@@ -5,7 +5,7 @@ q=0.01^2;
 
 s=zeros(1,N);
 f=@(x)x-0.01*sin(x);
-F=@(x)-0.01*cos(x);
+F=@(x)1-0.01*cos(x);
 h=@(x)0.5*sin(2*x); 
 H=@(x)cos(2*x);
 Y=s;
@@ -13,7 +13,8 @@ x0 = 0.4*pi;
 R = [];
 %x0 = 0;
 x = x0;
-for k=1:N
+s(1) = x0;
+for k=2:N
     x = f(x)+sqrt(q)*randn;
     s(k) = x;
 end
@@ -78,7 +79,8 @@ Ps_slkf = Ps;
 R(2) = rmse(s(x),ms); fprintf('SLF %3.4f\n',rmse(s(x),ms));
 
 if 1
-    plot(x,y,'.k',1:N,s,x,ms_ekf,x,ms_slkf,'MarkerSize',8);
+    plot(x,y,'.k',1:N,s,x,ms_ekf,x,ms_slkf,'--','MarkerSize',8);
+    %plot(1:N,s,x,ms_ekf,x,ms_slkf,'--','MarkerSize',8);
     legend('Meas.','True','EKF','SLF');
     xlabel('t');
     ylabel('m_k');
@@ -97,23 +99,27 @@ end
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-sig = zeros(0,3);
-alpha = 12; kappa = 1;
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
+
+alpha = 12; beta = 0; kappa = 1; % parameters
 lambda = alpha^2*(1+kappa) - 1;
+
 Wi = 1/(2*(1+lambda));
-Wm = [lambda/(1+lambda) Wi Wi];
-Wc = [lambda/(1+lambda)+(1-alpha^2) Wi Wi];
-for k=1:n
+Wm = [lambda/(1+lambda) Wi Wi]; % mean weights
+Wc = [lambda/(1+lambda)+(1-alpha^2) Wi Wi]; % covariance weights
+e = sqrt(lambda+1)*[0 1 -1]';
+for k=2:n
     % prediction
-    % form the three sigma points in the original space
-    sig = m*ones(3,1)+sqrt(lambda+1)*sqrt(P)*[0 1 -1]';
+    sig = m*ones(3,1)+sqrt(P)*e;
+    % propagate through dynamic model
     sig = f(sig);
     m_ = Wm*sig;
     P_ = Wc*((sig-m_).^2)+q;
     
-    sig_ = m_*ones(3,1)+sqrt(lambda+1)*sqrt(P_)*[0 1 -1]';
+    % update
+    sig_ = m_*ones(3,1)+sqrt(P_)*e;
+    % propagate through measurement model
     sigY = h(sig_);
     
     u = Wm*sigY;
@@ -123,7 +129,7 @@ for k=1:n
     m = m_+K*(y(k)-u);
     P = P_-K^2*S;
     ms(k) = m;
-    Ps(k) = P;
+    Ps(k) = P;    
 end
 R(3) = rmse(s(x),ms);
 if 1
@@ -143,20 +149,20 @@ end
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
 
 p = 2; % order of the polynomial
 e = roots(hermite(p)); % unit sigma points
-W = factorial(p)./(p*hermite(p-1,e)').^2;
+W = factorial(p)./(p*hermite(p-1,e)').^2; % weights
 
-for k=1:n
+for k=2:n
     % prediction
     sig = m*ones(p,1)+sqrt(P)*e;
     sig = f(sig);
     m_ = W*sig;
     P_ = W*((sig-m_).^2)+q;
-    
+    % update
     sig_ = m_*ones(p,1)+sqrt(P_)*e;
     sigY = h(sig_);
     
@@ -176,15 +182,15 @@ ms_ghkf = ms;
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
 
-p = 2; % order of the polynomial
 e = [1;-1]; % unit sigma points
-W = ones(1,2);
+p = length(e); % num of sigma points
+W = ones(1,p);
 W = W/sum(W);
 
-for k=1:n
+for k=2:n
     % prediction
     sig = m*ones(p,1)+sqrt(P)*e;
     sig = f(sig);
@@ -224,14 +230,14 @@ end
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-N = 700; % number of particles
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
+N = 500; % number of particles
 p = m*ones(1,N); % particles
 W = ones(1,N); % weights
 W = W/sum(W);
 
-for k=1:n
+for k=2:n
     % sample from the dynamic distribution, calculate weights
     %disp(W');
     for l=1:N
@@ -240,43 +246,45 @@ for k=1:n
     end
     % normalize weights
     W = W/sum(W);
+    % resample
     cdf = cumsum(W);
     for l=1:N
-        ran = rand;
-        p(l) = p(find(cdf > ran,1));
+        p(l) = p(find(cdf > rand,1));
     end
     ms(k) = W*p';
 end
 
-plot(x,ms,'-g');
-fprintf('BOOTSTRAP %3.4f\n',rmse(s(x),ms));
+R(6) = rmse(s(x),ms);
+ms_bs = ms;
 
-%% SIR
+% SIR
 
 m = x0;
 P = q;
-ms = zeros(1,n);
-Ps = zeros(1,n);
-N = 700; % number of particles
+ms = [m zeros(1,n-1)];
+Ps = [P zeros(1,n-1)];
+N = 500; % number of particles
 p = m*ones(1,N); % particles
 W = ones(1,N); % weights
 W = W/sum(W);
 
-sig = zeros(0,3);
-alpha = 1; kappa = 0;
+ % use UKF to get the importance distribution
+alpha = 2; beta = 0; kappa = 0;
 lambda = alpha^2*(1+kappa) - 1;
 Wi = 1/(2*(1+lambda));
 Wm = [lambda/(1+lambda) Wi Wi];
 Wc = [lambda/(1+lambda)+(1-alpha^2) Wi Wi];
-
-for k=1:n
-    % use UKF to get proposal mean and covariance
-    sig = m*ones(3,1)+sqrt(lambda+1)*sqrt(P)*[0 1 -1]';
+res = 0;
+e = sqrt(lambda+1)*[0 1 -1]';
+for k=2:n
+    % prediction
+    sig = m*ones(3,1)+sqrt(P)*e;
+    % propagate through dynamic model
     sig = f(sig);
     m_ = Wm*sig;
     P_ = Wc*((sig-m_).^2)+q;
     
-    sig_ = m_*ones(3,1)+sqrt(lambda+1)*sqrt(P_)*[0 1 -1]';
+    sig_ = m_*ones(3,1)+sqrt(P_)*e;
     sigY = h(sig_);
     
     u = Wm*sigY;
@@ -286,10 +294,13 @@ for k=1:n
     m = m_+K*(y(k)-u);
     P = P_-K^2*S;
    
-    % sample from the proposal distribution
+    % draw samples from the importance distribution
     for l=1:N
-        pp = normrnd(m,P);
-        W(l) = W(l)*normpdf(y(k),h(pp),sqrt(r))*normpdf(pp,f(p(l)),sqrt(q))/normpdf(pp,m,P);
+        pp = normrnd(m,P); % x_k^l
+        W(l) = W(l)*... % previous weight
+               normpdf(y(k),h(pp),sqrt(r))*... % p(y_k|x_k^l) 
+               normpdf(pp,f(p(l)),sqrt(q))/... % p(x_k^l|x_k-1^l)
+               normpdf(pp,m,sqrt(P)); % pi(x_k^l|x_k-1^l,y_1:k)
         p(l) = pp;
     end
     % normalize weights
@@ -301,27 +312,34 @@ for k=1:n
         po = p;
         cdf = cumsum(W);
         for l=1:N
-            ran = rand;
-            p(l) = po(find(cdf > ran,1));
+            p(l) = po(find(cdf > rand,1));
         end
         W = ones(1,N); % weights
         W = W/sum(W);
     else
         %fprintf('not resampling, neff = %3.1f\n',Neff);
+        res = res+1;
     end
     ms(k) = W*p';
-    
+    Ps(k) = (p-ms(k))*(W.*(p-ms(k)))';
 
 end
 
-plot(x,ms,'-r');
-fprintf('SIR %3.4f\n\n',rmse(s(x),ms));
+R(7) = rmse(s(x),ms);
+ms_sir = ms;
 
-legend('Meas.','True','Bootstrap','SIR');
-xlabel('t');
-ylabel('m_k');
-fprintf('SLF %3.4f\n',rmse(s(x),ms));
-exportplot('ex_6_2.pdf',figW,figH);
+if 1
+    plot(1:size(s,2),s,x,ms_bs,x,ms_sir,'--');
+    legend('True','Bootstrap','SIR');
+    xlabel('t');
+    ylabel('m_k');
+    exportplot('ex_6_2.pdf',figW,figH,gcf,1.5);
+    rLabels = {'RMSE'};
+    cLabels = {'EKF' 'SLF' 'UKF' 'GHKF' 'CKF' 'BS' 'SIR'};
+    matrix2latex(R,'ex_6_2_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+end
 
 
 %% ERTS

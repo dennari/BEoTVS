@@ -136,6 +136,7 @@ pdfproducer={xetex}
 \subsection{}
 \subsubsection{}
 
+
 The problem can be written in matrix form as follows:
 \begin{align*}
 	\v{y} &= \begin{bmatrix} y_1 & \dots & y_n \end{bmatrix}^T \\
@@ -1042,7 +1043,114 @@ slight margin.
 \lstinputlisting[linerange=218-307,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
 
 \section{}
-\subsection{}
+\subsection{}\label{sec:6_1}
+\subsubsection{}
+\begin{align}
+	\shortintertext{prediction:}
+	\v{m}_k^-&=\v{A}\v{m}_{k-1}\\
+	\v{P}_k^-&=\v{A}\v{P}_{k-1}\v{A}^T+\v{Q}
+	\shortintertext{update:}
+	v_k&=y_k-\v{H}\v{m}_k^-\\
+	\v{S}_k&=\v{H}\v{P}_k^-\v{H}+R\\
+	\v{K}_k&=\v{P}_k^-\v{H}^T\v{S}_k^{-1}\\
+	\v{m}_k&=\v{m}_k^-+\v{K}_kv_k\\
+	\v{P}_k&=\v{P}_k^--\v{K}_k\v{S}_k\v{K}_k^T
+	\shortintertext{where:}
+	\v{A}&=\begin{bmatrix}
+		1 & 1\\
+		0 & 1
+	\end{bmatrix}\\
+	\v{H}&=\begin{bmatrix}
+		1 & 0
+	\end{bmatrix}\\
+	\v{Q}&=\begin{bmatrix}
+		0.01 & 0\\
+		0 & 1
+	\end{bmatrix}\\
+	R &= 100
+\end{align}
+
+\subsubsection{}
+
+\begin{align}
+	p(\v{x}_k,y_{k}|\v{x}_{k-1})&=p(y_k|\v{x}_k)p(\v{x}_k|\v{x}_{k-1})\\
+	&=N\left(
+	\begin{bmatrix}
+		\v{x}_k\\y_{k}
+	\end{bmatrix}\left\vert
+	\begin{bmatrix}
+		\v{A}\v{x}_{k-1}\\
+		\v{H}\v{A}\v{x}_{k-1}
+	\end{bmatrix}
+	\right.,
+	\begin{bmatrix}
+		\v{Q} & \v{Q}\v{H}^T\\
+		\v{H}\v{Q} & \v{H}\v{Q}\v{H}^T+R  
+	\end{bmatrix}
+	\right)\\
+	\Rightarrow
+	\pi(\v{x}_k)&=p(\v{x}_k|\v{x}_{k-1},y_{1:k})\\
+	&=p(\v{x}_k|\v{x}_{k-1},y_{k}) =
+	N\left(\v{x}_k|\v{m}^I_k,\v{P}^I_k\right)\\ \v{m}^I_k&=\v{A}\v{x}_{k-1}+\v{Q}\v{H}^T\left(\v{H}\v{Q}\v{H}^T+R\right)^{-1}\left(y_k-\v{H}\v{A}\v{x}_{k-1}\right)\\
+	\v{P}^I_k&=\v{Q}-\v{Q}\v{H}^T\left(\v{H}\v{Q}\v{H}^T+R\right)^{-1}\v{H}\v{Q}
+\end{align}
+
+\subsubsection{}
+
+A pseudocode implementation of the SIR filter with $N$ particles 
+and $n+1$ time-steps using the above optimal importance distribution:
+
+\begin{enumerate}
+ 	\item {\bfseries Initialization}: Draw $N$ samples from the prior (for
+  example $N(\v{0},\v{Q})$)
+  	\begin{align}
+		\v{x}_0^{(i)}\sim p(\v{x}_0)
+	\end{align}
+	and set the weights as
+	\begin{align}
+		w_0^{(i)}=\frac{1}{N}
+	\end{align}
+	Set
+	\begin{align}
+		\v{m}_0&=\frac{1}{N}\sum_{i=1}^N \v{x}_0^{(i)}\\
+		\v{P}_0&=\frac{1}{N}\sum_{i=1}^N \left(\v{x}_0^{(i)}-\v{m}_0\right)^2
+	\end{align}
+	\item {\bfseries\ttfamily for k=1:n} :
+	\begin{itemize}
+		\item draw $N$ samples from the importance distribution:
+		\begin{align}
+			\v{x}_k^{(i)}\sim
+			p(\v{x}_k|\v{x}_{k-1}^{(i)},y_{k})=N\left(\v{x}_k|\v{m}^I_k,\v{P}^I_k\right)
+		\end{align}
+		\item update the weights as
+		\begin{align}
+			w_k^{(i)}&=w_{k-1}^{(i)}\frac{p(\v{x}_k^{(i)},y_{k}|\v{x}_{k-1}^{(i)})}{p(\v{x}_k^{(i)}|\v{x}_{k-1}^{(i)},y_{k})}\\
+			w_k^{(i)}&=\frac{w_k^{(i)}}{\sum_{j=1}^N w_k^{(j)}}
+		\end{align}
+  		\item set
+		\begin{align}
+			\v{m}_k&=\sum_{i=1}^N w_k^{(i)}\v{x}_k^{(i)}\\
+			\v{P}_k&=\sum_{i=1}^N w_k^{(i)}\left(\v{x}_k^{(i)}-\v{m}_k\right)^2
+		\end{align}
+		\item possibly resample: {\ttfamily if} $\frac{1}{\sum_{i=1}^N \left(w_k^{(i)}\right)^2} < \frac{N}{10}$ 
+		\begin{lstlisting}
+			% use inverse CDF sampling
+			po = p; % copy of the samples
+			cdf = cumsum(W); % the weights in W form the pdf
+			for l=1:N
+			    p(l) = po(find(cdf > rand,1));
+			end
+		\end{lstlisting}
+	\end{itemize}
+	
+	
+\end{enumerate}
+
+\subsubsection{}
+A Kalman filter can also be considered as a particle filter with a single particle. As this
+is a linear Gaussian case, the Kalman filter result is exact, so it could be considered
+the optimal particle filter in this case. Thus I would definitely choose the Kalman filter
+for a real implementation.
 
 
 \subsection{}\label{sec:6_2}
@@ -1051,29 +1159,22 @@ Here we implement the Bootstrap and sequential importance resampling (SIR) parti
 for the problem in exercise \ref{sec:4_1}. Both of the filters were run with $n=700$ particles and
 the UKF filter was used in SIR to provide importance distribution.
 The graphical results are presented in figure \ref{fig:ex_6_2} and the
-mcode in shown listing~\ref{lst:6_2}. The RMSE values are presented in table~\ref{table:rmse6_2}. As can be seen
+mcode is shown listing~\ref{lst:6_2}. The RMSE values are presented in table~\ref{table:rmse6_2}. As can be seen
 from the figure and the RMSE table, the SIR filter is somewhat better as was expected.
-
-\placefig[p]{ex_6_2}{1.0}{The true signal and the Bootstrap and SIR approximations
-in exercise~\ref{sec:6_2}}
-
 
 \begin{table}[h]
 	\centering
 	\topcaption{The RMSE values in exercise \ref{sec:6_2}}
-	\begin{tabular}{c c c}
-		\otoprule
-		Bootstrap & SIR\\
-		\midrule
-		$0.388$ & $0.355$\\
-		\bottomrule
-	\end{tabular}
+	\input{ex_6_2_rmse}
 	\label{table:rmse6_2}
 \end{table}
 
+\placefig[htb]{ex_6_2}{1.0}{The true signal and the Bootstrap and SIR approximations
+in exercise~\ref{sec:6_2}}
+
 \clearpage
 
-\lstinputlisting[linerange=208-300,caption={m-code in exercise~\ref{sec:6_2}},label=lst:6_2]{ex4_1.m}
+\lstinputlisting[linerange=223-315,caption={m-code in exercise~\ref{sec:6_2}},label=lst:6_2]{ex4_1.m}
 
 \subsection{}\label{sec:6_3}
 
@@ -1258,6 +1359,7 @@ This is analogical to exercise~\ref{sec:4_2c}:
 	\v{m}_k^s&=\v{m}_k+\v{G}_k\left[\v{m}_{k+1}^s-\v{m}_{k+1}^-\right]\\
 	\v{P}_k^s&=\v{P}_k+\v{G}_k\left[\v{P}_{k+1}^s-\v{P}_{k+1}^-\right]
 \end{align}
+
 
 
 

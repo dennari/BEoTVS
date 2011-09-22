@@ -107,7 +107,7 @@ function []=angle_ex(figW,figH)
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
     % exercise 5.3
-    if 0
+    if 1
         
         M1 = baseline();
         M2 = ekf();
@@ -124,8 +124,8 @@ function []=angle_ex(figW,figH)
         legend('True','UKF');    
         xlim([-2 2]);ylim([-2.2 2]);
 
-        exportplot('ex_5_3_ckf.pdf',figW,figH,f3,1.5);
-        exportplot('ex_5_3_ukf.pdf',figW,figH,f4,1.5);
+        %exportplot('ex_5_3_ckf.pdf',figW,figH,f3,1.5);
+        %exportplot('ex_5_3_ukf.pdf',figW,figH,f4,1.5);
         
         cLabels = {'Baseline' 'EKF' 'CKF' 'UKF'};
         matrix2latex([rmse(X,M1) rmse(X,M2) rmse(X,M3) rmse(X,M4)],'ex_5_3_rmse.tex',...
@@ -133,7 +133,7 @@ function []=angle_ex(figW,figH)
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
     % exercise 6.3
-    if 1
+    if 0
         M1 = baseline();
         M2 = ekf();
         M3 = ckf();
@@ -277,8 +277,12 @@ function []=angle_ex(figW,figH)
 
     function o=ukf()
         m = x0;            % Initialize to true value
+        m2 = x0;
         P = eye(4);        % Some uncertainty
+        P2 = P;
         ms = zeros(4,steps);
+        ms2 = ms;
+        Ps2 = Ps;
         n = 4;
         nn = size(S,2);
         alpha = 7; beta = 0; kappa = 20;
@@ -288,34 +292,48 @@ function []=angle_ex(figW,figH)
         Wc = [lambda/(n+lambda)+(1-alpha^2+beta) 1/(2*(n+lambda))*ones(1,2*n)];
         for k=1:steps
             % prediction
-            [m_,P_] = ukf_predict1(m,P,@(x,S)A*x,Q,[],alpha,beta,kappa);
+            [m2_,P2_] = ukf_predict1(m2,P2,@(x,S)A*x,Q,[],alpha,beta,kappa);
             % update
-            [m,P,~,~,~,~] = ukf_update1(m_,P_,Theta(:,k),@(x,S)h(x),R,[],alpha,beta,kappa);
-            ms(:,k) = m;
-            Ps(:,:,k) = P;
-            continue;
+            [m2,P2,~,~,~,~] = ukf_update1(m2_,P2_,Theta(:,k),@(x,S)h(x),R,[],alpha,beta,kappa);
+            ms2(:,k) = m2;
+            Ps2(:,:,k) = P2;
+            %continue;
+            
+            % form sigma points
             sig = repmat(m,1,2*n+1)+chol(P,'lower')*e;
+            % propagate through dynamic model
             sig = A*sig;
+            % prediction
             m_ = sig*Wm';
             m__ = repmat(m_,1,2*n+1);
             P_ = (sig-m__)*diag(Wc)*(sig-m__)'+Q;
+            
+            % form sigma points
             sig_ = m__+chol(P_,'lower')*e;
+            % propagate through measurement model
             sigY = zeros(nn,2*n);
             for j=1:(2*n+1)
-                sigY(:,j)=h(sig(:,j));
+                sigY(:,j)=h(sig_(:,j));
             end
+            
             u = sigY*Wm';
             u__ = repmat(u,1,2*n+1);
             S_ = (sigY-u__)*diag(Wc)*(sigY-u__)'+R;
             C = (sig_-m__)*diag(Wc)*(sigY-u__)';
             K = C/S_;
             m = m_+K*(Theta(:,k)-u);
-            P = P_-K*S_*K'
+            P = P_-K*S_*K';
             ms(:,k) = m;
             Ps(:,:,k) = P;
         end
+        %err = abs(ms-ms2);
+        %err(err > 0)
         o = ms;
         fprintf('UKF %3.4f\n',rmse(X,ms));
+        fprintf('UKF2 %3.4f\n',rmse(X,ms2));
+        showtrace('b');
+        figure;
+        ms = ms2;
         showtrace('b');
     end
 
