@@ -248,8 +248,9 @@ for k=2:n
     W = W/sum(W);
     % resample
     cdf = cumsum(W);
+    po = p;
     for l=1:N
-        p(l) = p(find(cdf > rand,1));
+        p(l) = po(find(cdf > rand,1));
     end
     ms(k) = W*p';
 end
@@ -367,10 +368,10 @@ for k=n-1:-1:1
     
 end
 
-plot(x,mss,'--r','LineWidth',2);
-fprintf('ERTS %3.4f\n\n',rmse(s(x),mss));
+R(8) = rmse(s(x),mss);
+ms_erts = mss;
 
-%% SL RTS
+% SL RTS
 
 mss = zeros(1,n);
 Pss = mss;
@@ -395,13 +396,20 @@ for k=n-1:-1:1
        
 end
 
-plot(x,mss,'--g','LineWidth',2);
-fprintf('SLRTS %3.4f\n\n',rmse(s(x),mss));
+R(9) = rmse(s(x),mss);
+ms_slrts = mss;
 
-legend('Meas.','True','EKF','SLF','ERTS','SL RTS');
-xlabel('t');
-ylabel('m_k');
-fprintf('SLF %3.4f\n',rmse(s(x),ms));
-exportplot('ex_7_3.pdf',figW,figH);
+if 1
+    plot(1:size(s,2),s,x,ms_erts,x,ms_slrts,'--');
+    legend('True','ERTS','SLRTS');
+    xlabel('t');
+    ylabel('m_k');
+    exportplot('ex_7_3b.pdf',figW,figH,gcf,1.5);
+    rLabels = {'RMSE'};
+    cLabels = {'EKF' 'SLF' 'UKF' 'GHKF' 'CKF' 'BS' 'SIR' 'ERTS' 'SLRTS'};
+    matrix2latex(R,'ex_7_3b_rmse.tex',...
+           'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+           'rowLabels',rLabels,'rowLabelAlignment','r');
+end
 
 

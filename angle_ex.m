@@ -107,7 +107,7 @@ function []=angle_ex(figW,figH)
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
     % exercise 5.3
-    if 1
+    if 0
         
         M1 = baseline();
         M2 = ekf();
@@ -124,8 +124,8 @@ function []=angle_ex(figW,figH)
         legend('True','UKF');    
         xlim([-2 2]);ylim([-2.2 2]);
 
-        %exportplot('ex_5_3_ckf.pdf',figW,figH,f3,1.5);
-        %exportplot('ex_5_3_ukf.pdf',figW,figH,f4,1.5);
+        exportplot('ex_5_3_ckf.pdf',figW,figH,f3,1.5);
+        exportplot('ex_5_3_ukf.pdf',figW,figH,f4,1.5);
         
         cLabels = {'Baseline' 'EKF' 'CKF' 'UKF'};
         matrix2latex([rmse(X,M1) rmse(X,M2) rmse(X,M3) rmse(X,M4)],'ex_5_3_rmse.tex',...
@@ -133,7 +133,7 @@ function []=angle_ex(figW,figH)
                'rowLabels',rLabels,'rowLabelAlignment','r');
     end
     % exercise 6.3
-    if 0
+    if 1
         M1 = baseline();
         M2 = ekf();
         M3 = ckf();
@@ -151,8 +151,8 @@ function []=angle_ex(figW,figH)
         legend('True','SIR');    
         xlim([-2 2]);ylim([-2.2 2]);
 
-        exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5);
-        exportplot('ex_6_3_sir.pdf',figW,figH,f6);
+        exportplot('ex_6_3_bootstrap.pdf',figW,figH,f5,1.5);
+        exportplot('ex_6_3_sir.pdf',figW,figH,f6,1.5);
         
         cLabels = {'Baseline' 'EKF' 'CKF' 'UKF' 'Bootstrap' 'SIR'};
         matrix2latex([rmse(X,M1) rmse(X,M2) rmse(X,M3) rmse(X,M4) rmse(X,M5) rmse(X,M6)],'ex_6_3_rmse.tex',...
@@ -164,9 +164,9 @@ function []=angle_ex(figW,figH)
    
     function [o,h]=baseline()
         m = x0;     % Initialize to true value
-        ms = zeros(4,steps);
+        ms = [m zeros(4,steps-1)];
 
-        for k=1:steps
+        for k=2:steps
             %% Compute crossing of the measurements
             dx1 = cos(Theta(1,k));
             dy1 = sin(Theta(1,k));
@@ -191,8 +191,8 @@ function []=angle_ex(figW,figH)
     function [o,hh]=ekf()
         m = x0;            % Initialize to true value
         P = eye(4);        % Some uncertainty
-        ms = zeros(4,steps);
-        for k=1:steps
+        ms = [m zeros(4,steps-1)];
+        for k=2:steps
             %% Compute estimate here
             m_ = A*m;
             P_ = A*P*A'+ Q;
@@ -232,9 +232,9 @@ function []=angle_ex(figW,figH)
 
         m = x0;            % Initialize to true value
         P = eye(4);        % Some uncertainty
-        ms = zeros(4,steps);
+        ms = [m zeros(4,steps-1)];
 
-        for k=1:steps
+        for k=2:steps
             [m,P] = ckf_(Theta(:,k));
             ms(:,k) = m;
             Ps(:,:,k) = P;
@@ -277,28 +277,17 @@ function []=angle_ex(figW,figH)
 
     function o=ukf()
         m = x0;            % Initialize to true value
-        m2 = x0;
         P = eye(4);        % Some uncertainty
-        P2 = P;
-        ms = zeros(4,steps);
-        ms2 = ms;
-        Ps2 = Ps;
+        ms = [m zeros(4,steps-1)];
         n = 4;
         nn = size(S,2);
-        alpha = 7; beta = 0; kappa = 20;
+        alpha = 7; beta = 1; kappa = 1;
         lambda = alpha^2*(1+kappa) - 1;
         e = [zeros(n,1) sqrt(n+lambda)*eye(n) -sqrt(n+lambda)*eye(n)]; % unit sigma points
         Wm = [lambda/(n+lambda) 1/(2*(n+lambda))*ones(1,2*n)];
         Wc = [lambda/(n+lambda)+(1-alpha^2+beta) 1/(2*(n+lambda))*ones(1,2*n)];
-        for k=1:steps
-            % prediction
-            [m2_,P2_] = ukf_predict1(m2,P2,@(x,S)A*x,Q,[],alpha,beta,kappa);
-            % update
-            [m2,P2,~,~,~,~] = ukf_update1(m2_,P2_,Theta(:,k),@(x,S)h(x),R,[],alpha,beta,kappa);
-            ms2(:,k) = m2;
-            Ps2(:,:,k) = P2;
-            %continue;
-            
+        for k=2:steps
+
             % form sigma points
             sig = repmat(m,1,2*n+1)+chol(P,'lower')*e;
             % propagate through dynamic model
@@ -326,43 +315,38 @@ function []=angle_ex(figW,figH)
             ms(:,k) = m;
             Ps(:,:,k) = P;
         end
-        %err = abs(ms-ms2);
-        %err(err > 0)
         o = ms;
-        fprintf('UKF %3.4f\n',rmse(X,ms));
-        fprintf('UKF2 %3.4f\n',rmse(X,ms2));
-        showtrace('b');
-        figure;
-        ms = ms2;
         showtrace('b');
     end
 
     function o=bootstrap()
         P = eye(4);        % Some uncertainty
-        ms = zeros(4,steps);
+        ms = [m zeros(4,steps-1)];
         ii = zeros(1,steps);
         N = 150;
-        p = repmat(x0,1,N); % particles
+        p = mvnrnd(repmat(x0',N,1),P)'; % particles
         W = ones(1,N); % weights
         W = W/sum(W);
-
-        for k=1:steps
-            % prediction
+        
+        %p(:,1)
+        %mvnrnd(A*p(:,1),Q)
+        for k=2:steps
+            % prediction and update
             for l=1:N
-                p(:,l) = mvnrnd(A*p(:,l),Q);
+                p(:,l) = mvnrnd(A*p(:,l),Q)';
                 W(l) = mvnpdf(Theta(:,k),h(p(:,l)),R);
             end
             W = W/sum(W);
+            
+            % resample
             cdf = cumsum(W);
             po = p;
             for l=1:N
-                ran = rand;
-                ii(k) = find(cdf >= ran,1);
-                p(:,l) = po(:,find(cdf >= ran,1));
+                p(:,l) = po(:,find(cdf > rand,1));
             end
             ms(:,k) = p*W';
-            %anim();
         end
+        size(p)
         o = ms;
         %% Compute error
         fprintf('BOOTSTRAP %3.4f\n',rmse(X,ms));
@@ -372,14 +356,14 @@ function []=angle_ex(figW,figH)
     function o=sir()
         m = x0;
         P = eye(4);        % Some uncertainty
-        ms = zeros(4,steps);
+        ms = [m zeros(4,steps-1)];
         ii = zeros(1,steps);
         N = 150;
         p = repmat(x0,1,N); % particles
         W = ones(1,N); % weights
         W = W/sum(W);
         c = 0;
-        for k=1:steps
+        for k=2:steps
             
             [m,P] = ckf_(Theta(:,k));
             % prediction

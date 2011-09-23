@@ -43,9 +43,9 @@ Pso = Ps;
 R(1) = rmse(x,ms);
 
 % discretization
-a=min(y);
-b=max(y);
-N = 500;
+a=min(y)-0.15*(max(y)-min(y));
+b=max(y)+0.15*(max(y)-min(y));
+N = 1000;
 t = linspace(a,b,N);
 [TX,TY] = meshgrid(t);
 p_dyn = normpdf(TX,TY,sqrt(q));
@@ -66,10 +66,13 @@ for k=2:n
     Ps(k) = (t-m).^2*p';
 end;
 dms = ms;
-dPs = Ps; 
+dPs = Ps;
+%imagesc(x,t,distr); axis xy;
+
 
 if 1 % plot
     % means, measurements
+    figure;
     plot(x,y,'.k',...
         1:n,s,...
         x,mso,...
@@ -234,8 +237,9 @@ if 1 %plot
     xlabel('Time');
     ylabel('Variance');
     exportplot('ex_7_1c_variances.pdf',figW,figH,gcf,1.5);
-    
-    matrix2latex(R,'ex_1_3_rmse.tex',...
+    rLabels = {'RMSE'};
+    cLabels = {'Kalman','RTS','Stat. RTS'};
+    matrix2latex([R(1) R(3) R(4)],'ex_7_1_rmse.tex',...
            'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
            'rowLabels',rLabels,'rowLabelAlignment','r');
 end
@@ -244,38 +248,38 @@ end
 
 %% parameter estimation
 
-% try to estimate the measurement noise
-r0 = r;
-N = 100;
-rs = linspace(0.5,4,N);
-L = zeros(1,100);
-
-for j=1:N
-    r = rs(j);
-    m = 0;
-    P = 1;
-    m2 = 0;
-    P2 = 1;
-    ms = zeros(1,n);
-    ms2 = zeros(1,n);
-    Ps2 = zeros(1,n);
-    Ps = zeros(1,n);
-    Ks = Ps;
-    for k=1:n
-       
-        % prediction
-        m_= m;
-        P_ = P+q;
-
-        ms(k) = m_;
-        Ps(k) = P_+r;
-    end
-
-    L(j) = exp(sum(log(normpdf(r,ms,Ps))));
-
-end
-
-plot(rs,L);
+% % try to estimate the measurement noise
+% r0 = r;
+% N = 100;
+% rs = linspace(0.5,4,N);
+% L = zeros(1,100);
+% 
+% for j=1:N
+%     r = rs(j);
+%     m = 0;
+%     P = 1;
+%     m2 = 0;
+%     P2 = 1;
+%     ms = zeros(1,n);
+%     ms2 = zeros(1,n);
+%     Ps2 = zeros(1,n);
+%     Ps = zeros(1,n);
+%     Ks = Ps;
+%     for k=1:n
+%        
+%         % prediction
+%         m_= m;
+%         P_ = P+q;
+% 
+%         ms(k) = m_;
+%         Ps(k) = P_+r;
+%     end
+% 
+%     L(j) = exp(sum(log(normpdf(r,ms,Ps))));
+% 
+% end
+% 
+% plot(rs,L);
 
 
 

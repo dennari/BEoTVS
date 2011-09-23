@@ -564,7 +564,7 @@ Now it's easy to see that
 \begin{align}
 	\E{\v{y}}&=\E{\v{H}\v{x}}=\v{H}\E{\v{x}}=\v{H}\v{m}\\
 	\var{\v{y}}&=\E{\v{R}}+\var{\v{H}\v{x}}=\v{R}+\v{H}\var{\v{x}}\v{H}^T=\v{R}+\v{H}\v{P}\v{H}^T\\
-	\Leftrightarrow \v{y} \sim N(\v{H}\v{m},\v{H}\v{P}\v{H}^T+\v{R})
+	\Leftrightarrow \v{y} &\sim N(\v{H}\v{m},\v{H}\v{P}\v{H}^T+\v{R})
 \end{align}
 
 \subsubsection{}
@@ -708,16 +708,19 @@ filter. The model is
 In this one-dimensional case approximating the required
 integrals using a grid approximation is feasible. In figure \ref{fig:ex_3_2_means}
 the random walk signal with $n=100$ timesteps is plotted with the means given
-by the Kalman filter and the grid approximation. In figure \ref{fig:ex_3_2_variances}
+by the Kalman filter and the grid approximation, where the $y$-axis has been discretized
+into $500$ equidistant points. In figure \ref{fig:ex_3_2_variances}
 the variances of the approximated Gaussian distributions are plotted for 
-the Kalman filter and the grid approximation. The m-code is presented in listing \ref{lst:3_2}. 
+the Kalman filter and the grid approximation. As can be seen, thThe m-code is presented in listing \ref{lst:3_2}. 
+
+
 
 \placefig[p]{ex_3_2_means}{1.0}{The true random walk signal (blue), the mean of the Kalman filter (red) and the 
 mean of the grid approximation (green) in exercise~\ref{sec:3_2}}
 \placefig[p]{ex_3_2_variances}{1.0}{The true random walk signal (blue), the mean of the Kalman filter (red) and the 
 mean of the grid approximation (green) in exercise~\ref{sec:3_2}}
 \clearpage
-\lstinputlisting[linerange=7-87,caption={m-code in exercise~\ref{sec:3_2}},label=lst:3_2]{ex3_2.m}
+\lstinputlisting[linerange=7-69,caption={m-code in exercise~\ref{sec:3_2}},label=lst:3_2]{ex3_2.m}
 
 \subsection{}\label{sec:3_3}
 Here we consider the Kalman filter for a noisy resonator model. The model
@@ -954,7 +957,7 @@ in table~\ref{table:rmse4_3} and the mcode in listing~\ref{lst:4_3a}.
 \clearpage
 
 
-\lstinputlisting[linerange=146-208,caption={m-code in exercise~\ref{sec:4_3a}},label=lst:4_3a]{angle_ex.m}
+\lstinputlisting[linerange=189-227,caption={m-code in exercise~\ref{sec:4_3a}},label=lst:4_3a]{angle_ex.m}
 
 \section{}
 
@@ -964,6 +967,7 @@ Here we implement the unscented Kalman filter for the problem in exercise \ref{s
 The parameters of the UKF transformation (which affect the sigma point spread) were chosen as follows:
 \begin{align}
 	\alpha = 12\\
+	\beta = 0\\
 	\kappa = 1
 \end{align}
 The graphical results are illustrated in figure \ref{fig:ex_5_1}, where the UKF solution
@@ -983,7 +987,7 @@ in exercise~\ref{sec:5_1}}
 
 \clearpage
 
-\lstinputlisting[linerange=96-127,caption={m-code in exercise~\ref{sec:5_1}},label=lst:5_1]{ex4_1.m}
+\lstinputlisting[linerange=98-133,caption={m-code in exercise~\ref{sec:5_1}},label=lst:5_1]{ex4_1.m}
 
 
 
@@ -1006,7 +1010,7 @@ are presented in table~\ref{table:rmse5_2}.The m-code is presented in listing~\r
 \placefig[htb]{ex_5_2}{1.0}{The true signal and the GHKF and CKF approximations
 in exercise~\ref{sec:5_2}}
 \clearpage
-\lstinputlisting[linerange=142-208,caption={m-code in exercise~\ref{sec:5_2}},label=lst:5_2]{ex4_1.m}
+\lstinputlisting[linerange=148-214,caption={m-code in exercise~\ref{sec:5_2}},label=lst:5_2]{ex4_1.m}
 
 
 \subsection{}\label{sec:5_3}
@@ -1040,7 +1044,7 @@ slight margin.
 
 \clearpage
 
-\lstinputlisting[linerange=218-307,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
+\lstinputlisting[linerange=231-320,caption={m-code in exercise~\ref{sec:5_3}},label=lst:5_3]{angle_ex.m}
 
 \section{}
 \subsection{}\label{sec:6_1}
@@ -1174,7 +1178,7 @@ in exercise~\ref{sec:6_2}}
 
 \clearpage
 
-\lstinputlisting[linerange=223-315,caption={m-code in exercise~\ref{sec:6_2}},label=lst:6_2]{ex4_1.m}
+\lstinputlisting[linerange=229-327,caption={m-code in exercise~\ref{sec:6_2}},label=lst:6_2]{ex4_1.m}
 
 \subsection{}\label{sec:6_3}
 
@@ -1183,6 +1187,13 @@ exercise \ref{sec:4_3}. The graphical results are presented in figure \ref{fig:e
 are compared and the mcode in shown listing~\ref{lst:6_3}. The updated RMSE values are presented
 in table~\ref{table:rmse6_3}. As can be seen, the CKF/UKF approximation is better but only by a very
 slight margin. 
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:6_3}}
+	\input{ex_6_3_rmse}
+	\label{table:rmse6_3}
+\end{table}
 
 \begin{figure}[htb]
   \begin{adjustwidth}{-2in}{-2in}
@@ -1194,19 +1205,12 @@ slight margin.
   	  \caption{The true trajectory, the bootstrap approximation and the SIR approximation in exercise~\ref{sec:6_3}}
 	  \label{fig:ex_6_3}
 \end{figure}
+\clearpage
 
-
-\begin{table}[h]
-	\centering
-	\topcaption{The RMSE values in exercise \ref{sec:6_3}}
-	\input{ex_6_3_rmse}
-	\label{table:rmse6_3}
-\end{table}
-
-
-\lstinputlisting[linerange=294-386,caption={m-code in exercise~\ref{sec:6_3}},label=lst:6_3]{angle_ex.m}
+\lstinputlisting[linerange=322-416,caption={m-code in exercise~\ref{sec:6_3}},label=lst:6_3]{angle_ex.m}
 
 \section{}
+
 
 \subsection{}
 \subsubsection{}\label{sec:7_1a}
@@ -1223,12 +1227,14 @@ of the evolution of the variances of the Kalman filter and the RTS smoother is p
 figure~\ref{fig:ex_7_1a_variances}. As expected, the RTS smoother variance is smaller in general
 and equal to the Kalman filter variance when $k=n$. The m-code is shown in listing~\ref{lst:7_1a}.
 
-\lstinputlisting[linerange=112-129,caption={m-code in exercise~\ref{sec:7_1a}},label=lst:7_1a]{ex3_2.m}
-
-\placefig[p]{ex_7_1a_means}{1.0}{The measurements, the true signal, the Kalman filter solution mean and the RTS smoother
+\placefig[htb]{ex_7_1a_means}{1.0}{The measurements, the true signal, the Kalman filter solution mean and the RTS smoother
 solution mean in exercise~\ref{sec:7_1a}}
-\placefig[p]{ex_7_1a_variances}{1.0}{The Kalman filter solution's and the RTS smoother
+\placefig[htb]{ex_7_1a_variances}{1.0}{The Kalman filter solution's and the RTS smoother
 solution's variances in exercise~\ref{sec:7_1a}}
+\clearpage
+
+\lstinputlisting[linerange=115-132,caption={m-code in exercise~\ref{sec:7_1a}},label=lst:7_1a]{ex3_2.m}
+
 
 \subsubsection{}\label{sec:7_1b}
 Here the exact smoother of the previous exercise is computed by a grid approximation,
@@ -1236,11 +1242,11 @@ in a similar fashion as for the Kalman filter in exercise~\ref{sec:3_2}. The mea
 of the smoother and its grid approximation are presented in figures \ref{fig:ex_7_1b_means} and 
 \ref{fig:ex_7_1b_variances}. The m-code is shown in listing~\ref{lst:7_1b}.
 
-\lstinputlisting[linerange=158-182,caption={m-code in exercise~\ref{sec:7_1b}},label=lst:7_1b]{ex3_2.m}
+\placefig[htbp]{ex_7_1b_means}{1.0}{The RTS smoother's and its grid approximation's means in exercise~\ref{sec:7_1b}}
+\placefig[htbp]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
 
-
-\placefig[p]{ex_7_1b_means}{1.0}{The RTS smoother's and its grid approximation's means in exercise~\ref{sec:7_1b}}
-\placefig[p]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
+\clearpage
+\lstinputlisting[linerange=161-185,caption={m-code in exercise~\ref{sec:7_1b}},label=lst:7_1b]{ex3_2.m}
 
 \subsubsection{}\label{sec:7_1c}
 If the stationary Kalman filter is used to provide the filtering distributions for the RTS smoother,
@@ -1251,23 +1257,40 @@ value is taken as the last value from the smoother in \ref{sec:7_1a} (convergenc
 
 In figures \ref{fig:ex_7_1c_means} and \ref{fig:ex_7_1c_variances} the means and variances of the
 stationary and non-stationary (the smoother in \ref{sec:7_1a}) smoothers are compared and the m-code
-is shown in listing~\ref{lst:7_1c}
+is shown in listing~\ref{lst:7_1c}. The RMSE performance of the normal, discrete and stationary RTS
+smoothers is shown in table~\ref{table:rmse7_1}.
 
-\lstinputlisting[linerange=209-223,caption={m-code in exercise~\ref{sec:7_1c}},label=lst:7_1c]{ex3_2.m}
 
-\placefig[p]{ex_7_1c_means}{1.0}{The RTS and the stationary RTS smoother's means in exercise~\ref{sec:7_1c}}
-\placefig[p]{ex_7_1c_variances}{1.0}{The RTS and the stationary RTS smoother's variances in exercise~\ref{sec:7_1c}}
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:7_1c}}
+	\input{ex_7_1_rmse}
+	\label{table:rmse7_1}
+\end{table}
 
+\placefig[htb]{ex_7_1c_means}{1.0}{The RTS and the stationary RTS smoother's means in exercise~\ref{sec:7_1c}}
+\placefig[htb]{ex_7_1c_variances}{1.0}{The RTS and the stationary RTS smoother's variances in exercise~\ref{sec:7_1c}}
+\clearpage
+\lstinputlisting[linerange=212-226,caption={m-code in exercise~\ref{sec:7_1c}},label=lst:7_1c]{ex3_2.m}
 \subsection{}\label{sec:7_2}
 
 Here we have implemented the RTS smoother to the resonator model in exercise~\ref{sec:3_3}.
 The performances of the base-line, the Kalman filter and the RTS smoother solutions
-are presented in table~\ref{table:rmse7_2}.
+are presented in table~\ref{table:rmse7_2} and the graphical solutions are compared
+in figure~\ref{fig:ex_7_2}. The m-code for the smoother
+is shown in listing~\ref{lst:7_2}.
+
+\begin{table}[h]
+	\centering
+	\topcaption{The RMSE values in exercise \ref{sec:7_2}}
+	\input{ex_7_2_rmse}
+	\label{table:rmse7_2}
+\end{table}
+
+\placefig[htb]{ex_7_2}{1.0}{The Kalman filter's and RTS smoother's means in exercise~\ref{sec:7_2}}
+\lstinputlisting[linerange=178-208,caption={m-code in exercise~\ref{sec:7_2}},label=lst:7_2]{kf_ex.m}
 
 
-
-
-\placefig[p]{ex_7_2}{1.0}{The Kalman filter's and RTS smoother's means in exercise~\ref{sec:7_2}}
 
 \subsection{}\label{sec:7_3}
 \subsubsection{}\label{sec:7_3a}
@@ -1325,26 +1348,25 @@ and using the matrix inversion lemma we get:
 
 
 \subsubsection{}\label{sec:7_3b}
-Here we have implemented the statistically linearized RTS smoother and the
-extended RTS smoothers for the problem in exercise~\ref{sec:4_1}. Graphical comparison
-of the implemented filters and smoothers is presented in figure~\ref{fig:ex_7_3} and
-the RMSE's are compared in table~\ref{table:rmse7_3}.
+Here we have implemented the statistically linearized RTS smoother (SLRTS) and the
+extended RTS smoother (ERTS) for the problem in exercise~\ref{sec:4_1}. The performance
+of the smoothers is illustrated in figure~\ref{fig:ex_7_3b} and
+the RMSE's of all the implemented methods for this problem
+are compared in table~\ref{table:rmse7_3b}. The m-code for the smoothers
+is shown in listing~\ref{lst:7_3b}.
 
-\begin{table}[h]
+\begin{table}[htb]
 	\centering
-	\topcaption{The RMSE values in exercise \ref{sec:7_3}}
-	\begin{tabular}{c c c c}
-		\otoprule
-		EKF & SLF & ERTS & SLRTS\\
-		\midrule
-		$0.946$ & $0.440$ & $0.946$ & $0.440$\\
-		\bottomrule
-	\end{tabular}
-	\label{table:rmse7_3}
+	\topcaption{The RMSE values in exercise \ref{sec:7_3b}}
+	\input{ex_7_3b_rmse}
+	\label{table:rmse7_3b}
 \end{table}
 
 
-\placefig[p]{ex_7_3}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SL RTS) filters in exercise~\ref{sec:7_3}}
+\placefig[htb]{ex_7_3b}{1.0}{The RTS smoothers for the EKF (ERTS) and SLF (SLRTS) filters in exercise~\ref{sec:7_3b}}
+\clearpage
+\lstinputlisting[linerange=346-397,caption={m-code in exercise~\ref{sec:7_3b}},label=lst:7_3b]{ex4_1.m}
+
 
 \subsubsection{}\label{sec:7_3c}
 

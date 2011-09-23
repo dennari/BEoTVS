@@ -207,26 +207,29 @@ for k=steps-1:-1:1
     
 end
 
-  % Plot the signal and its estimate
-  figure;
-  subplot(2,1,1);
-  plot(T,EST2(1,:),'--',T,EST3(1,:),'-');
-  legend('Kalman','RTS');
-  xlabel('Time');
-  ylabel('Mean');
+% Plot the signal and its estimate
+figure;
+subplot(2,1,1);
+plot(T,EST2(1,:),'-',T,EST3(1,:),'--');
+legend('Kalman','RTS');
+xlabel('Time');
+ylabel('Mean');
+
+% Plot the derivative and its estimate
+subplot(2,1,2);
+plot(T,EST2(2,:),'-',T,EST3(2,:),'--');
+legend('Kalman','RTS');
+xlabel('Time');
+ylabel('Mean');
+
+exportplot('ex_7_2.pdf',figW,figH,gcf,1.5);
+err4 = rmse(X,mss);
   
-  % Plot the derivative and its estimate
-  subplot(2,1,2);
-  plot(T,EST2(2,:),'--',T,EST3(2,:),'-');
-  legend('Kalman','RTS');
-  xlabel('Time');
-  ylabel('Mean');
-  
-  exportplot('ex_7_2.pdf',figW,figH);
-  
-  err4 = rmse(X,mss);
-  
-  
+rLabels = {'RMSE'};
+cLabels = {'Baseline' 'Kalman' 'Stat. Kalman' 'RTS'};
+matrix2latex([err1 err2 err3 err4],'ex_7_2_rmse.tex',...
+       'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+       'rowLabels',rLabels,'rowLabelAlignment','r');  
   
 
 
