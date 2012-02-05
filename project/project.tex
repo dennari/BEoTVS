@@ -1,0 +1,403 @@
+\documentclass[12pt,a4paper,oneside,article]{memoir}
+
+% COMMAND
+\usepackage{xparse}
+
+% LAYOUT
+\usepackage{changepage}
+\setulmarginsandblock{0.7\uppermargin}{0.8\lowermargin}{*}
+
+% MATHS
+\usepackage{amsmath,amsfonts,amssymb,amsbsy,commath,mathtools,calc}
+\mathtoolsset{showonlyrefs,showmanualtags}
+
+\usepackage{subfig}
+% FONTS & LANGUAGE
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{light-gray}{gray}{0.8}
+\usepackage{fontspec,xltxtra,polyglossia}
+\setmainlanguage{english}
+\usepackage[normalem]{ulem} % have underlinings work
+%\defaultfontfeatures{Ligatures=TeX}
+\defaultfontfeatures{Mapping=tex-text}
+
+\setmainfont[Ligatures={Common}, Numbers={OldStyle}]{Linux Libertine O}
+%\setmainfont{Droid Sans}
+%\setsansfont[Scale=MatchLowercase]{Inconsolata}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+
+% PDF SETUP
+\usepackage[unicode,bookmarks, colorlinks, breaklinks,
+pdftitle={S-114.4202: Exercise report},
+pdfauthor={Ville Väänänen},
+pdfproducer={xetex}
+]{hyperref}
+\hypersetup{linkcolor=black,citecolor=black,filecolor=black,urlcolor=MidnightBlue} 
+
+% TABLES
+\usepackage{booktabs}
+\usepackage{topcapt} 
+\usepackage{rccol}
+\usepackage{tabularx} % requires array
+\newcommand{\otoprule}{\midrule[\heavyrulewidth]}
+\newcolumntype{d}[2]{R[.][.]{#1}{#2}}
+
+\usepackage{titlesec}
+
+%%%%%%%% OMAT KOMENNOT %%%%%%%%%%%%
+
+\usepackage{mymath}
+\usepackage{mylayout}
+
+
+
+% PARAGRAPHS
+%\usepackage{parskip}
+
+% kuvat
+
+\usepackage{listings}
+\usepackage{mcode}
+\lstset{ %
+	%language=Matlab,                % choose the language of the code
+	basicstyle=\footnotesize\ttfamily,% the size of the fonts that are used for the code 
+	numbers=none,                   % where to put the line-numbers
+	numberstyle=\footnotesize\ttfamily,      % the size of the fonts that are usedfor the line-numbers 
+	stepnumber=5,                   % the step between two line-numbers. If it's 1 each line 
+	aboveskip=2\medskipamount,
+	belowskip=2\medskipamount,                                % will be numbered
+	numbersep=-5pt,                  % how far the line-numbers are from the code
+	backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+	showspaces=false,               % show spaces adding particular underscores
+	showstringspaces=false,         % underline spaces within strings
+	showtabs=false,                 % show tabs within strings adding particular underscores
+	frame=l,
+	framesep=0pt,
+	framexleftmargin=2mm,
+	rulecolor=\color{light-gray},	                % adds a frame around the code
+	tabsize=2,	                % sets default tabsize to 2 spaces
+	caption=,
+	captionpos=t,                   % sets the caption-position to bottom
+	breaklines=true,                % sets automatic line breaking
+	breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+	emptylines=*1,
+	%title=\lstname,                 % show the filename of files included with
+	                                % also try caption instead of title
+	escapeinside={\%*}{*)},         % if you want to add a comment within your code
+            % if you want to add more keywords to the set
+}
+
+\newcommand{\course}{S-114.4202}
+\newcommand{\coursename}{Special Course in Computational Engineering II}
+\newcommand{\duedate}{\today}
+\newcommand{\studentid}{63527M}
+\renewcommand{\title}{Parameter estimation in linear-Gaussian state-space
+models}
+\author{Ville Väänänen}
+
+\setsecnumdepth{subsubsection}
+\counterwithout{section}{chapter}
+\checkandfixthelayout
+\renewcommand{\thesubsubsection}{\thesubsection{\large\scshape\alph{subsubsection}}}
+\titleformat{\subsubsection}{\large\scshape}{\alph{subsubsection} )}{10pt}{}
+\titleformat{\section}{\Huge}{\thesection}{10pt}{}
+\titleformat{\subsection}{\Large}{\thesubsection}{10pt}{}
+
+\everymath{\displaystyle}
+\begin{document}
+
+	\begin{titlingpage}
+		\begin{flushright} 
+			Ville \textsc{Väänänen} / \studentid\\
+			ville.vaananen@aalto.fi
+		\end{flushright}
+		\vspace{8.0cm}
+		\begin{adjustwidth}{-0.5in}{-0.5in}
+			\begin{center}
+				\textsc{\large \title}
+				\HRule \\[0.19cm]
+				{\course\: \coursename}
+			\end{center}
+		\end{adjustwidth}
+		\vfill
+		\begin{center}
+			\today
+		\end{center}	
+	\end{titlingpage}
+	
+	\newpage
+
+\section{Introduction}
+Parameter estimation refers to a broad class of problems in
+machine learning. Suppose we have a linear gaussian state-space
+model (SSM) of the form:
+
+\begin{align}
+	\v{x}_k&=\v{A}\v{x}_{k-1}+\v{q}_{k-1}\\
+	\v{y}_k&=\v{H}\v{x_k}+\v{r}_k\\
+	\v{q}_{k-1} &\sim \N{0,\v{Q}}\\
+	\v{r}_{k} &\sim \N{0,\v{R}}
+	\shortintertext{meaning}
+	\v{x}_{k}|\v{x}_{k-1} &\sim \N{\v{A}\v{x}_{k-1},\v{Q}}\\
+	\v{y}_{k}|\v{x}_{k} &\sim \N{\v{H}\v{x_k},\v{R}}
+	\label{eq:model}   
+\end{align}
+Let us denote the set of parameters of this model with $\gv{\theta}$ and we assume
+an implicit dependance of the matrices $\left\{\v{A},\v{H},\v{Q},\v{R}\right\}$ on
+$\gv{\theta}$. The matrices of all the states and all the observations are denoted with
+\begin{align}
+	\v{X}&=\v{X}_{1:T}=
+	\begin{bmatrix}
+		\v{x}_1 & \dots & \v{x}_T
+	\end{bmatrix}\\
+	\v{Y}&=\v{Y}_{1:T}=
+	\begin{bmatrix}
+		\v{y}_1 & \dots & \v{y}_T
+	\end{bmatrix}
+\end{align}
+respectively.
+
+In the Bayesian sense the complete answer to the parameter estimation
+problem is the marginal posterior
+probability
+
+\begin{align}
+	\Pdf{\gv{\theta}}{\v{Y}}&=\frac{\Pdf{\v{Y}}{\gv{\theta}}\Pdf{\gv{\theta}}}{\Pdf{\v{Y}}}\\
+	\Rightarrow \log\Pdf{\gv{\theta}}{\v{Y}}&\propto \log \Pdf{\v{Y}}{\gv{\theta}} + \log\Pdf{\gv{\theta}}
+	\label{eq:param_post}
+\end{align}
+
+The marginal likelihood $\Pdf{\v{Y}}{\gv{\theta}}$ can be obtained by
+marginalization from the complete-data likelihood. Because of the
+Markov conditional independence properties of \eqref{eq:model},
+the complete-data likelihood can be written as
+\begin{align}
+	\Pdf{\v{X},\v{Y}}{\gv{\theta}}&=\Pdf{\v{x}_0}\prod_{k=1}^T\Pdf{\v{y}_k}{\v{x}_{k}}\Pdf{\v{x}_k}{\v{x}_{k-1}}
+	\label{eq:complete_data_lh}
+\end{align}
+so that the marginal likelihood is obtained by integration:
+\begin{align}
+	\Pdf{\v{Y}}{\gv{\theta}}&=\defint{\v{X}}{}{\Pdf{\v{X},\v{Y}}{\gv{\theta}}}{\v{X}}
+	\label{eq:marginal_lh}
+\end{align}
+Since $\v{Y}$ is observed, \eqref{eq:marginal_lh} is a function of the
+parameters only.
+
+Maximizing \eqref{eq:param_post} (i.e. finding the MAP estimate) is equal
+minimizing the so-called energy function
+\begin{align}
+	\varphi(\gv{\theta})&=-\log\Pdf{\v{Y}}{\gv{\theta}}-\log\Pdf{\gv{\theta}}
+	\label{eq:energyf}
+\end{align}
+The Kalman filter forward recursions give us the means to perform
+the integration over the states analytically, so that \eqref{eq:marginal_lh}
+can be evaluated for any given $\gv{\theta}$.
+
+\section{Methods}
+
+\subsection{Gradient based search}
+
+This is the classical way of solving the problem. It consists
+of computing the gradient of the energy function and using some
+non-linear optimization method to find its minimum. An effiecient
+algorithm is the scaled conjugate gradient method. A couple of problems
+are assoaciated with this approach. Firstly, calculating the gradient
+of $\varphi(\gv{\theta})$ at best tedious. And secondly, the result will
+only be a point estimate to a probability distribution.
+
+To derive the expression for the energy function in our case,
+let us first see what the Kalman filter calculates. Firstly,
+the recursions are as follows:
+
+\begin{align}
+	\shortintertext{prediction:}
+	\v{m}_k^-&=\v{A}\v{m}_{k-1}\\
+	\v{P}_k^-&=\v{A}\v{P}_{k-1}\v{A}^T+\v{Q}
+	\shortintertext{update:}
+	\v{v}_k&=\v{y}_k-\v{H}\v{m}_k^-\\
+	\v{S}_k&=\v{H}\v{P}_k^-\v{H}+\v{R}\\
+	\v{K}_k&=\v{P}_k^-\v{H}^T\v{S}_k^{-1}\\
+	\v{m}_k&=\v{m}_k^-+\v{K}_k\v{v}_k\\
+	\v{P}_k&=\v{P}_k^--\v{K}_k\v{S}_k\v{K}_k^T
+\end{align}
+This includes the sufficient statistics for the $T$
+joint distributions 
+\begin{align}
+	\Pdf{\v{x}_k,\v{y}_k}{\v{Y}_{1:k-1},\gv{\theta}}
+	&=N\left(
+	\begin{bmatrix}
+		\v{x}_k\\\v{y}_{k}
+	\end{bmatrix}\left\vert
+	\begin{bmatrix}
+		\v{m}_k^-\\
+		\v{H}\v{m}_k^-
+	\end{bmatrix}
+	\right.,
+	\begin{bmatrix}
+		\v{P}_k^- & \v{P}_k^-\v{H}^T\\
+		\v{H}\v{P}_k^- & \v{S}_k  
+	\end{bmatrix}
+	\right)\\
+	\Rightarrow \Pdf{\v{y}_k}{\v{Y}_{1:k-1},\gv{\theta}}
+	&=N\left(\cond{\v{y}_k}{\v{H}\v{m}_k^-,\v{S}_k }\right)
+	\label{eq:joint_per_kalmanstep}
+\end{align}
+To see how this enables us to calculate \eqref{eq:energyf}, one 
+only needs to note that (it has been assumed that the observations are
+independent given the states)
+\begin{align}
+	\Pdf{\v{Y}}{\gv{\theta}}&=\Pdf{\v{y}_1}{\gv{\theta}}\prod_{k=2}^T \Pdf{\v{y}_k}{\v{Y}_{1:k-1},\gv{\theta}}
+	\label{eq:marginal_lh_factorization}
+\end{align}
+Armed with this knowledge, we can write the following expression for the energy function
+in this linear-Gaussian case:
+\begin{align}
+	\varphi(\gv{\theta})&=\frac{1}{2}\sum_{k=1}^T\log\abbs{\v{S}_k}
+	+\frac{1}{2}\sum_{k=1}^T\left(\v{y}_k-\v{H}\v{m}_k^-\right)^T\v{S}_k^{-1}\left(\v{y}_k-\v{H}\v{m}_k^-\right)+\log\Pdf{\gv{\theta}}+C
+	\label{eq:energyf_norm}
+\end{align}
+
+In order to calculate the gradient, we need to formally derivate
+\eqref{eq:energyf_norm} w.r.t every parameter $\theta_i$:
+
+\begin{align}
+	\dpd{\varphi(\gv{\theta})}{\theta_i}
+	&=\frac{1}{2}\mathrm{Tr}\left(\v{S}_k^{-1}\dpd{\v{S}_k}{\theta_i}\right)\\
+	&-\frac{1}{2}\sum_{k=1}^T\left(\v{H}_k\dpd{\v{m}^-_k}{\theta_i}\right)^T\v{S}_k^{-1}\left(\v{y}_k-\v{H}\v{m}_k^-\right)\\
+	&-\frac{1}{2}\sum_{k=1}^T\left(\v{y}_k-\v{H}\v{m}_k^-\right)^T\v{S}_k^{-1}\left(\dpd{\v{S}_k}{\theta_i}\right)\v{S}_k^{-1}\left(\v{y}_k-\v{H}\v{m}_k^-\right)\\
+	&-\frac{1}{2}\sum_{k=1}^T\left(\v{y}_k-\v{H}\v{m}_k^-\right)^T\v{S}_k^{-1}\left(\v{H}_k\dpd{\v{m}^-_k}{\theta_i}\right)\\
+	\label{eq:energyf_d}
+\end{align}
+From Kalman filter recursions we find out that 
+\begin{align}
+	\dpd{\v{S}_k}{\theta_i}&=\v{H}\dpd{\v{P}_k^-}{\theta_i}\v{H}+\dpd{\v{R}}{\theta_i}
+\end{align}
+so that we're left with the task of determining the partial derivatives for
+$\v{m}^-_k$ and $\v{P}_k^-$:
+
+\begin{align}
+	\dpd{\v{m}_k^-}{\theta_i}&=\dpd{\v{A}}{\theta_i}\v{m}_{k-1}+\v{A}\dpd{\v{m}_{k-1}}{\theta_i}\\
+	\dpd{\v{P}_k^-}{\theta_i}&=\dpd{\v{A}}{\theta_i}\v{P}_{k-1}\v{A}^T+\v{A}\dpd{\v{P}_{k-1}}{\theta_i}\v{A}^T+\v{A}\v{P}_{k-1}\left(\dpd{\v{A}}{\theta_i}\right)^T+\dpd{\v{Q}}{\theta_i}
+\end{align}
+as well as for $\v{m}_k$ and $\v{P}_k$:
+\begin{align}
+	\dpd{\v{K}_k}{\theta_i}&=\dpd{\v{P}_k^-}{\theta_i}\v{H}^T\v{S}_k^{-1}+\v{P}_k^-\v{H}^T\v{S}_k^{-1}\left(\v{H}\dpd{\v{P}_k^-}{\theta_i}\v{H}+\dpd{\v{R}}{\theta_i}\right)\v{S}_k^{-1}\\
+	\dpd{\v{m}_k}{\theta_i}&=\dpd{\v{m}_k^-}{\theta_i}+\dpd{\v{K}_k}{\theta_i}\left(\v{y}_k-\v{H}\v{m}_k^-\right)-\v{K}_k\v{H}\dpd{\v{m}_k^-}{\theta_i}\\
+	\dpd{\v{P}_k}{\theta_i}&=\dpd{\v{P}_k^-}{\theta_i}-\dpd{\v{K}_k}{\theta_i}\v{S}_{k}\v{K}_{k}^T-\v{K}_{k}\left(\v{H}\dpd{\v{P}_k^-}{\theta_i}\v{H}+\dpd{\v{R}}{\theta_i}\right)\v{K}_{k}^T-\v{K}_{k}^T\v{S}_{k}\left(\dpd{\v{K}_k}{\theta_i}\right)^T
+\end{align}
+
+\subsection{Expectation maximization (EM)}
+In order to derive the EM algorithm, let us imagine temporarily
+that also the states $\v{X}$ have been observed. In this case the likelihood
+doesn't have to be marginalized, since we already know everything
+to calculate it:
+\begin{align}
+	\log\Pdf{\gv{\theta}}{\v{X},\v{Y}}&\propto\log\Pdf{\v{X},\v{Y}}{\gv{\theta}}+\log\Pdf{\gv{\theta}}
+	\label{eq:complete_data_lh_em}
+\end{align}
+and so the energy function is now
+\begin{align}
+	\varphi(\gv{\theta})&=
+	\frac{1}{2}\sum_{k=1}^T\log\abbs{\v{R}_k}+\frac{T}{2}\log\abbs{\v{Q}}\\
+	&+\frac{1}{2}\sum_{k=1}^T\left(\v{y}_k-\v{Hx}_k\right)^T\v{R}_k^{-1}\left(\v{y}_k-\v{Hx}_k\right)\\
+	&+\frac{1}{2}\sum_{k=1}^T\left(\v{x}_k-\v{A}\v{x}_{k-1}\right)^T\v{Q}^{-1}\left(\v{x}_k-\v{A}\v{x}_{k-1}\right)\\
+	&+\log\Pdf{\gv{\theta}}+C
+	\label{eq:energyf_em}
+\end{align}
+
+
+
+EM is an iterative algorithm, where we have to start from some initial parameter
+value $\gv{{\theta}_0}$. In the $j$:th iteration of the algorithm, we first form
+the posterior distribution of the latent variables given the previous parameter values:
+
+\begin{align}
+	\Pdf{\v{X}}{\v{Y},\gv{\theta}_{j-1}}&=
+	\frac{\Pdf{\v{x}_0}{\gv{\theta}_{j-1}}\prod_{k=1}^T\Pdf{\v{y}_k}{\v{x}_{k},\gv{\theta}_{j-1}}\Pdf{\v{x}_k}{\v{x}_{k-1},\gv{\theta}_{j-1}}}{\Pdf{\v{y}_1}{\gv{\theta_{j-1}}}\prod_{k=2}^T
+	\Pdf{\v{y}_k}{\v{Y}_{1:k-1},\gv{\theta}_{j-1}}}
+\end{align}
+
+This is called the E-step. In the subsequent M-step, we obtain the new estimate
+$\gv{\theta}_k$ by maximizing the expectation of the energy function, where
+the expectation is calculated over $\Pdf{\v{X}}{\v{Y},\gv{\theta}_{j-1}}$:
+\begin{align}
+	\gv{\theta}_j&=\arg\max_{\gv{\theta}}\left(\defint{\v{X}}{}{\Pdf{\v{X}}{\v{Y},\gv{\theta}_{j-1}}\varphi(\gv{\theta})}{\v{X}}\right)\\
+	&=\arg\max_{\gv{\theta}}\left(L\left(\gv{\theta},\gv{\theta}_{j-1}\right)\right)
+\end{align}
+
+In our case we get the following form for the funtion to be maximized in the
+M-step on iteration $j$:
+
+\begin{align}
+	L\left(\gv{\theta},\gv{\theta}_{j-1}\right)&=
+	\frac{1}{2}\sum_{k=1}^T\log\abbs{\v{R}_k}+\frac{T}{2}\log\abbs{\v{Q}}\\
+	&+\frac{1}{2}\sum_{k=1}^T\v{y}_k^T\v{R}^{-1}\v{y}_k
+	-\sum_{k=1}^T\v{y}_k^T\v{R}^{-1}\v{H}\E{\v{x}_k}
+	+\frac{1}{2}\sum_{k=1}^T\mathrm{tr}\left(\v{H}^T\v{R}^{-1}\v{H}\E{\v{x}_k\v{x}_k^T}\right)\\
+	&+\frac{1}{2}\sum_{k=1}^T\mathrm{tr}\left(\v{Q}^{-1}\E{\v{x}_k\v{x}_k^T}\right)
+	-\sum_{k=1}^T\mathrm{tr}\left(\v{Q}^{-1}\v{A}\E{\v{x}_k\v{x}_{k-1}^T}\right)\\
+	&+\frac{1}{2}\sum_{k=1}^T\mathrm{tr}\left(\v{A}^T\v{Q}^{-1}\v{A}\E{\v{x}_{k-1}\v{x}_{k-1}^T}\right)
+	+\log\Pdf{\gv{\theta}}+C
+	\label{eq:energyf_expectation}
+\end{align}
+The expectations that are left in \eqref{eq:energyf_expectation} can be
+calculated with the Kalman smoother:
+
+\begin{align}
+	\E{\v{x}_k}&=\v{m}_k^S\\
+	\E{\v{x}_k\v{x}_k^T}&=\v{P}_k^S+\v{m}_k^S(\v{m}_k^S)^T\\
+	\E{\v{x}_k\v{x}_{k-1}^T}&=\v{P}_k^S+\v{m}_k^S(\v{m}_k^S)^T
+\end{align}
+
+After we have calculated the sufficient statistics with the Kalman
+smoother given $\gv{\theta}_{j-1}$, we proceed to estimate the new
+value $\gv{\theta}_{j-1}$ by finding the maximum of
+$L\left(\gv{\theta},\gv{\theta}_{j-1}\right)$ in the M-step. For that,
+we take the derivatives of \eqref{eq:energyf_expectation} w.r.t each of the
+parameters. Let us first proceed by taking the derivatives w.r.t
+$\left\{\v{A},\v{H},\v{Q},\v{R}\right\}$ after which we'll apply
+the chain rule
+\begin{align}
+	\dpd{L\left(\gv{\theta},\gv{\theta}_{j-1}\right)}{\theta_i}&=\mathrm{tr}\left[\left(\dpd{L\left(\gv{\theta},\gv{\theta}_{j-1}\right)}{\v{A}}\right)^T\dpd{\v{A}}{\theta_i}\right].
+\end{align}
+We get
+\begin{align}
+	\dpd{L\left(\gv{\theta},\gv{\theta}_{j-1}\right)}{\v{A}}&=\v{Q}^{-1}\v{A}\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k-1}^T}-\v{Q}^{-1}\sum_{k=1}^T\E{\v{x}_{k-1}\v{x}_{k-1}^T}=0\\
+	\hat{\v{A}}&=\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k-1}^T}\left(\sum_{k=1}^T\E{\v{x}_{k-1}\v{x}_{k-1}^T}\right)^{-1}\\ 
+	\dpd{L\left(\gv{\theta},\gv{\theta}_{j-1}\right)}{\v{H}}&=\v{R}^{-1}\sum_{k=1}^T\v{y}_k\E{\v{x}_{k}^T}-\v{R}^{-1}\v{H}\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k}^T}=0\\
+	\hat{\v{H}}&=\sum_{k=1}^T\E{\v{y}_{k}\v{x}_{k}^T}\left(\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k}^T}\right)^{-1}\\ 
+	\hat{\v{Q}}&=\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k}^T}-\hat{\v{A}}\left(\sum_{k=1}^T\E{\v{x}_{k}\v{x}_{k-1}^T}\right)^T\\ 
+	\hat{\v{R}}&=\sum_{k=1}^T\v{y}_{k}\v{y}_{k}^T-\hat{\v{H}}\left(\sum_{k=1}^T\E{\v{y}_{k}\v{x}_{k}^T}\right)^T 
+\end{align}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Problem}
+\section{Results}
+
+
+%\bibliographystyle{plain}
+%\bibliography{viitteet}
+\end{document}

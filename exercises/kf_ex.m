@@ -185,12 +185,13 @@
 
 mss = zeros(2,steps);
 Pss = EST2P;
-Gs = mss;
+Gs = Pss;
+P2s = Pss;
 m_s = EST2(:,end);
 P_s = EST2P(:,:,end);
 mss(:,end) = m_s;
 Pss(:,:,end) = P_s;
-
+P2s(:,:,end) = (eye(2)-K*H)*A*Pss(:,:,end-1); % covariance across 2 timesteps
 for k=steps-1:-1:1
     m = EST2(:,k);
     P = EST2P(:,:,k);
@@ -199,11 +200,15 @@ for k=steps-1:-1:1
     P_ = A*P*A'+Q;
     
     % update
-    G = P*A/P_;
+    G = P*A'/P_;
     m_s = m + G*(m_s-m_);
     P_s = P + G*(P_s-P_)*G';
+    P_2s = P*G'+Gs(:,:,k+1)*(P2s(:,:,k+1)-A*P)*G';
+    
+    Gs(:,:,k) = G;
     mss(:,k) = m_s;
     Pss(:,:,k) = P_s;
+    P2s(:,:,k) = P_2s;
     
 end
 
@@ -222,14 +227,14 @@ legend('Kalman','RTS');
 xlabel('Time');
 ylabel('Mean');
 
-exportplot('ex_7_2.pdf',figW,figH,gcf,1.5);
+%exportplot('ex_7_2.pdf',figW,figH,gcf,1.5);
 err4 = rmse(X,mss);
   
-rLabels = {'RMSE'};
-cLabels = {'Baseline' 'Kalman' 'Stat. Kalman' 'RTS'};
-matrix2latex([err1 err2 err3 err4],'ex_7_2_rmse.tex',...
-       'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
-       'rowLabels',rLabels,'rowLabelAlignment','r');  
+% rLabels = {'RMSE'};
+% cLabels = {'Baseline' 'Kalman' 'Stat. Kalman' 'RTS'};
+% matrix2latex([err1 err2 err3 err4],'ex_7_2_rmse.tex',...
+%        'alignment','d{?}{2}','format','$%.5f$','columnLabels',cLabels,...
+%        'rowLabels',rLabels,'rowLabelAlignment','r');  
   
 
 

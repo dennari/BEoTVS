@@ -1,0 +1,49 @@
+\RequirePackage{commath}
+
+% infinitesimaalinen muutos
+%\newcommand{\ds}{\mathrm{d}}
+\newcommand{\measure}[2]{\dif#1(#2)}
+%\newcommand{\dd}{\;\ds}
+% määrätty integraali
+\newcommand{\defint}[4]{
+\int_{#1}^{#2}#3\;\dif#4
+}
+
+% reaaliluvut, kompleksiluvut..
+\newcommand{\field}[1]{\mathbb{#1}}
+\newcommand{\R}{\field{R}}
+\newcommand{\Complex}{\field{C}}
+\newcommand{\Deg}{\mathrm{Deg}}
+\newcommand{\iprod}[2]{\langle{}#1,#2\rangle}
+%\renewcommand{\v}[1]{\boldsymbol{#1}} % vektorit ja matriisit
+
+% statistics
+\newcommand{\cond}[2]{#1 \middle\vert #2}
+\newcommand{\var}[1]{\mathrm{var}\left(#1\right)}
+\newcommand{\cov}[2]{\mathrm{cov}\left[#1,#2\right]}
+\newcommand{\E}[1]{\mathrm{E}\left[#1\right]}
+\newcommand{\N}[1]{\mathrm{N}\left(#1\right)}
+\newcommand{\Prob}[1]{\mathrm{P}\left(#1\right)}
+\newcommand{\mn}[1]{\overline{#1}}
+% physics header
+
+\let\vaccent=\v % rename builtin command \v{} to \vaccent{}
+\renewcommand{\v}[1]{\mathbf{#1}} % for vectors
+\newcommand{\gv}[1]{\boldsymbol{#1}} % for vectors of Greek letters
+\newcommand{\uv}[1]{\v{\hat{#1}}} % for unit vector
+\newcommand{\abbs}[1]{\left| #1 \right|} % for absolute value
+\newcommand{\avg}[1]{\left< #1 \right>} % for average
+\let\underdot=\d % rename builtin command \d{} to \underdot{}
+
+\newcommand{\ket}[1]{\left| #1 \right>} % for Dirac bras
+\newcommand{\bra}[1]{\left< #1 \right|} % for Dirac kets
+\newcommand{\braket}[2]{\left< #1 \vphantom{#2} \right|
+ \left. #2 \vphantom{#1} \right>} % for Dirac brackets
+\newcommand{\matrixel}[3]{\left< #1 \vphantom{#2#3} \right|
+ #2 \left| #3 \vphantom{#1#2} \right>} % for Dirac matrix elements
+\newcommand{\grad}[1]{\gv{\nabla} #1} % for gradient
+\let\divsymb=\div % rename builtin command \div to \divsymb
+\renewcommand{\div}[1]{\gv{\nabla} \cdot #1} % for divergence
+\newcommand{\curl}[1]{\gv{\nabla} \times #1} % for curl
+\let\baraccent=\= % rename builtin command \= to \baraccent
+\renewcommand{\=}[1]{\stackrel{#1}{=}} % for putting numbers above =

@@ -1,0 +1,16 @@
+
+\newcommand{\placefig}[4][ht!]{
+  \begin{figure}[#1]
+    \begin{adjustwidth}{-2in}{-2in}
+	    \centering
+	    \includegraphics[scale=#3]{#2}
+	    %%% I think \captionwidth (see above) can go away as long as
+	\end{adjustwidth}
+	\centering
+	\caption{#4}
+	\label{fig:#2}
+  	
+  \end{figure}
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}

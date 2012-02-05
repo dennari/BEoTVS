@@ -109,8 +109,10 @@ ms_st = ms;
 Ps_st = Ps;
 R(2) = rmse(x,ms);
 
+%% Frequency response
 
-
+bode(zpk([],[1-K],[K]));
+exportplot('ex_3_2_bode.pdf',figW,figH,gcf,1.5);
 
 %% RTS smoother
 

@@ -1,4 +1,5 @@
 \RequirePackage{commath}
+\RequirePackage{xparse}
 
 % infinitesimaalinen muutos
 %\newcommand{\ds}{\mathrm{d}}
@@ -18,11 +19,16 @@
 %\renewcommand{\v}[1]{\boldsymbol{#1}} % vektorit ja matriisit
 
 % statistics
-\newcommand{\cond}[2]{#1 \middle\vert #2}
+\newcommand{\cond}[2]{#1 \;\middle\vert\; #2}
 \newcommand{\var}[1]{\mathrm{var}\left(#1\right)}
 \newcommand{\cov}[2]{\mathrm{cov}\left[#1,#2\right]}
-\newcommand{\E}[1]{\mathrm{E}\left[#1\right]}
-\newcommand{\Prob}[1]{\mathrm{P}\left(#1\right)}
+\newcommand{\E}[1]{\left<#1\right>}
+\newcommand{\N}[1]{\mathrm{N}\left(#1\right)}
+\NewDocumentCommand\Pdf{m+g}{%
+  \IfNoValueTF{#2}
+    {p\left(#1\right)}
+    {p\left(#1 \;\middle\vert\; #2\right)}%
+}
 \newcommand{\mn}[1]{\overline{#1}}
 % physics header
 

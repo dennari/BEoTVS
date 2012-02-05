@@ -27,7 +27,7 @@
 
 % PDF SETUP
 \usepackage[unicode,bookmarks, colorlinks, breaklinks,
-pdftitle={T-61.5140: Prerequisites},
+pdftitle={S-114.4202: Exercise report},
 pdfauthor={Ville Väänänen},
 pdfproducer={xetex}
 ]{hyperref}
@@ -494,6 +494,7 @@ this can be derived from the Kalman filter equations:
 
 \subsubsection{}
 
+
 \begin{itemize}
   \item step 1
   \begin{itemize}
@@ -691,7 +692,7 @@ By following closely the derivation of the Kalman filter equations in the course
 \end{align}
 
 \subsection{}\label{sec:3_2}
-
+\subsubsection{}
 Here we filter a Gaussian random walk model with the Kalman
 filter. The model is
 
@@ -704,23 +705,44 @@ filter. The model is
 	x_{k}|x_{k-1} &\sim N\left(x_{k-1},Q\right)\\
 	y_{k}|x_{k} &\sim N\left(x_k,R \right)   
 \end{align}
-
+\subsubsection{}
 In this one-dimensional case approximating the required
 integrals using a grid approximation is feasible. In figure \ref{fig:ex_3_2_means}
 the random walk signal with $n=100$ timesteps is plotted with the means given
 by the Kalman filter and the grid approximation, where the $y$-axis has been discretized
-into $500$ equidistant points. In figure \ref{fig:ex_3_2_variances}
+into $1000$ equidistant points. In figure \ref{fig:ex_3_2_variances}
 the variances of the approximated Gaussian distributions are plotted for 
-the Kalman filter and the grid approximation. As can be seen, thThe m-code is presented in listing \ref{lst:3_2}. 
+the Kalman filter and the grid approximation. As can be seen, the grid approximation
+is indistinguishable from the Kalman filter solution. The m-code is presented in listing \ref{lst:3_2}. 
+\subsubsection{}
+The stationary Kalman filter can be obtained by running the filter long enough for
+the kalman gain $K_k$ to converge to the constant $K$. In this case, the Kalman filter becomes an linear time-invariant
+filter that can be described with a transfer function and whose frequency response can be plotted.
+The Kalman filter solution now becomes
 
+\begin{align}
+	m_k&=(K-1)m_{k-1}+Ky_k\\
+	P_k&=P_{k-1}+Q-K^2(P_{k-1}+Q+R)\\
+	q_{k-1} &\sim N\left(0,Q\right)\\
+\end{align}
 
+describing a LTI filter
+
+\begin{align}
+	y_k&=(1-K)y_{k-1}+Kx_k\\
+	\Rightarrow H(z)&=\frac{K}{1-(1-K)z^{-1}}
+\end{align}
+The frequency response of this low-pass filter is plotted in
+figure~\ref{fig:ex_3_2_bode}.
 
 \placefig[p]{ex_3_2_means}{1.0}{The true random walk signal (blue), the mean of the Kalman filter (red) and the 
 mean of the grid approximation (green) in exercise~\ref{sec:3_2}}
 \placefig[p]{ex_3_2_variances}{1.0}{The true random walk signal (blue), the mean of the Kalman filter (red) and the 
 mean of the grid approximation (green) in exercise~\ref{sec:3_2}}
+\placefig[p]{ex_3_2_bode}{1.0}{The frequency response of the LTI filter
+described by the static Kalman filter in exercise~\ref{sec:3_2}}
 \clearpage
-\lstinputlisting[linerange=7-69,caption={m-code in exercise~\ref{sec:3_2}},label=lst:3_2]{ex3_2.m}
+\lstinputlisting[linerange=7-115,caption={m-code in exercise~\ref{sec:3_2}},label=lst:3_2]{ex3_2.m}
 
 \subsection{}\label{sec:3_3}
 Here we consider the Kalman filter for a noisy resonator model. The model
@@ -733,7 +755,7 @@ We compare the Kalman filter solution to a base line solution, where the
 measurement $y_k$ is directly used as $x_k^{(1)}$ and $x_k^{(2)}$ is calculated
 as a weighted average of the measurement differences. The base line solution is
 presented in figure~\ref{fig:ex_3_3_basesol} and the Kalman filter solution in 
-figure~\ref{fig:ex_3_3_kalmansol}
+figure~\ref{fig:ex_3_3_kalmansol}. 
 
 \placefig[p]{ex_3_3_basesol}{1.0}{The base line solution in
 exercise~\ref{sec:3_3}}
@@ -863,15 +885,11 @@ Putting these together, we have
 	\E{h(x_{k})\delta x_k} &= \cos(2m_{k}^-)P_{k}^-e^{-2P_{k}^-} 
 	\shortintertext{where expectations are with respect to $N(x_{k}|m_{k}^-,P_{k}^-)$} 
 \end{align}
-
 The results of applying the SLF in the same situation as in \ref{sec:4_1a} are
 presented also in figure~\ref{fig:ex_4_1}. The RMSE's for both of the methods
 is presented in table~\ref{table:rmse4_1} and the mcode is shown in listing~\ref{lst:4_1}.
-
-
-\placefig[htb]{ex_4_1}{1.0}{The true signal and the EKF and SLF approximations
-in exercise~\ref{sec:4_1}}
-
+As can be seen, the EKF and SLF solutions are practically identical in this case, however
+deriving the expectations was much more difficult than deriving the derivatives.
 
 \begin{table}[h]
 	\centering
@@ -880,11 +898,10 @@ in exercise~\ref{sec:4_1}}
 	\label{table:rmse4_1}
 \end{table}
 
-
-
-\lstinputlisting[linerange=1-78,caption={m-code in exercise~\ref{sec:4_1}},label=lst:4_1]{ex4_1.m}
-
+\placefig[htb]{ex_4_1}{1.0}{The true signal and the EKF and SLF approximations
+in exercise~\ref{sec:4_1}}
 \clearpage
+\lstinputlisting[linerange=1-78,caption={m-code in exercise~\ref{sec:4_1}},label=lst:4_1]{ex4_1.m}
 
 \subsection{}\label{sec:4_2}
 Here we derive an alternative form of SLF.
@@ -923,11 +940,24 @@ the SLF equations as
 	\v{P}_k&=\v{P}_k^--\v{K}_k\v{S}_k\v{K}_k^T
 \end{align}
 
+\subsubsection{}\label{sec:4_2d}
+
+Well, one can then replace the expectations of the Jacobians with the partial derivative
+of \ref{sec:4_2b}, which might be easier to compute in some cases. To check that
+we get the same results with this alternative form in the previous exercise:
+
+\begin{align}
+	\dpd{}{m_{k-1}}\left(\E{f(x_{k-1})}\right)P_{k-1} &= \dpd{}{m_{k-1}}\left(m_{k-1}-0.01\sin(m_{k-1})e^{-\frac{1}{2}P_{k-1}}\right)P_{k-1}\\
+	&=P_{k-1}-0.01\cos(m_{k-1})P_{k-1}e^{-\frac{1}{2}P_{k-1}}=\E{f(x_{k-1})\delta x_{k-1}}\\
+	\dpd{}{m_{k}}\left(\E{h(x_{k})}\right)P_{k} &= \dpd{}{m_{k}}\left(0.5\sin(2m_{k}^-)e^{-2P_{k}^-}\right)P_{k}\\
+	&=\cos(2m_{k}^-)P_{k}^-e^{-2P_{k}^-} =\E{h(x_{k})\delta x_k}
+\end{align}
+At least in this case formulating the SLF through the alternative presentation is easier.
 
 
 \subsection{}\label{sec:4_3}
 \subsubsection{}\label{sec:4_3a}
-In this exercise the classical problem of bearings only taget tracking is considered.
+In this exercise the classical problem of bearings only target tracking is considered.
 The problem setting is not reproduced here, but an EKF was implemented for an approximate
 solution. The graphical results are presented in figures \ref{fig:ex_4_3_baseline} and \ref{fig:ex_4_3_ekf}, the RMSE value
 in table~\ref{table:rmse4_3} and the mcode in listing~\ref{lst:4_3a}.
@@ -1233,7 +1263,7 @@ solution mean in exercise~\ref{sec:7_1a}}
 solution's variances in exercise~\ref{sec:7_1a}}
 \clearpage
 
-\lstinputlisting[linerange=115-132,caption={m-code in exercise~\ref{sec:7_1a}},label=lst:7_1a]{ex3_2.m}
+\lstinputlisting[linerange=117-137,caption={m-code in exercise~\ref{sec:7_1a}},label=lst:7_1a]{ex3_2.m}
 
 
 \subsubsection{}\label{sec:7_1b}
@@ -1246,7 +1276,7 @@ of the smoother and its grid approximation are presented in figures \ref{fig:ex_
 \placefig[htbp]{ex_7_1b_variances}{1.0}{The RTS smoother's and its grid approximation's variances in exercise~\ref{sec:7_1b}}
 
 \clearpage
-\lstinputlisting[linerange=161-185,caption={m-code in exercise~\ref{sec:7_1b}},label=lst:7_1b]{ex3_2.m}
+\lstinputlisting[linerange=163-189,caption={m-code in exercise~\ref{sec:7_1b}},label=lst:7_1b]{ex3_2.m}
 
 \subsubsection{}\label{sec:7_1c}
 If the stationary Kalman filter is used to provide the filtering distributions for the RTS smoother,
@@ -1271,7 +1301,7 @@ smoothers is shown in table~\ref{table:rmse7_1}.
 \placefig[htb]{ex_7_1c_means}{1.0}{The RTS and the stationary RTS smoother's means in exercise~\ref{sec:7_1c}}
 \placefig[htb]{ex_7_1c_variances}{1.0}{The RTS and the stationary RTS smoother's variances in exercise~\ref{sec:7_1c}}
 \clearpage
-\lstinputlisting[linerange=212-226,caption={m-code in exercise~\ref{sec:7_1c}},label=lst:7_1c]{ex3_2.m}
+\lstinputlisting[linerange=216-228,caption={m-code in exercise~\ref{sec:7_1c}},label=lst:7_1c]{ex3_2.m}
 \subsection{}\label{sec:7_2}
 
 Here we have implemented the RTS smoother to the resonator model in exercise~\ref{sec:3_3}.
@@ -1375,14 +1405,14 @@ This is analogical to exercise~\ref{sec:4_2c}:
 \begin{align}
 	\shortintertext{prediction:}
 	\v{m}_{k+1}^-&=\E{\v{f}(\v{x}_{k})}\\
-	\v{P}_{k+1}^-&=\E{\v{F}_{\v{x}}(\v{x}_{k})}\v{P}_{k}^{T}\E{\v{F}_{\v{x}}(\v{x}_{k})}^T+\v{Q}_k
+	\v{P}_{k+1}^-&=\dpd{\E{\v{f}(\v{x}_{k})}}{\v{m}_{k}}\v{P}_{k}^{T}\dpd{\E{\v{f}(\v{x}_{k})}}{\v{m}_{k}}^T+\v{Q}_k
 	\shortintertext{update:}
-	\v{G}_k&=\E{\v{F}_{\v{x}}(\v{x}_{k})}^T\left[\v{P}_{k+1}^-\right]^{-1}\\
+	\v{G}_k&=\dpd{\E{\v{f}(\v{x}_{k})}}{\v{m}_{k}}^T\left[\v{P}_{k+1}^-\right]^{-1}\\
 	\v{m}_k^s&=\v{m}_k+\v{G}_k\left[\v{m}_{k+1}^s-\v{m}_{k+1}^-\right]\\
 	\v{P}_k^s&=\v{P}_k+\v{G}_k\left[\v{P}_{k+1}^s-\v{P}_{k+1}^-\right]
 \end{align}
-
-
+As we already checked that $\dpd{}{m_{k-1}}\left(\E{f(x_{k-1})}\right)P_{k-1}=\E{f(x_{k-1})\delta x_{k-1}}$,
+in exercise~\ref{sec:4_2d}, we see that this alternative formulation is equal to the original formulation.
 
 
 %\bibliographystyle{plain}
